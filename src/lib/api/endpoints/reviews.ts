@@ -1,0 +1,11 @@
+import { api } from '../client';
+import type { CreateReviewPayload, Review } from '@/types/api';
+
+export const reviewsApi = {
+  /** May 404 when no review exists yet — call sites tolerate it (Overview §8a). */
+  bySession: (sessionId: string) =>
+    api.get<Review>(`/api/v1/sessions/${sessionId}/review`),
+  detail: (id: string) => api.get<Review>(`/api/v1/reviews/${id}`),
+  /** Slow AI call (3–15s) — drive with explicit pending UI, not a skeleton. */
+  create: (payload: CreateReviewPayload) => api.post<Review>('/api/v1/reviews', payload),
+};

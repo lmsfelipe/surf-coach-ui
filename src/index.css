@@ -1,0 +1,109 @@
+@import './styles/colors_and_type.css'; /* exported design tokens, unchanged */
+@import 'tailwindcss';
+
+/* ============================================================
+   shadcn semantic tokens → SurfRise (dark "Midnight Electric")
+   See SPEC_FRONTEND_StyleGuide.md §2.1
+   ============================================================ */
+:root {
+  --background: var(--color-midnight);
+  --foreground: var(--color-text);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-electric);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-surface-2);
+  --secondary-foreground: var(--color-text);
+  --muted: var(--color-surface-2);
+  --muted-foreground: var(--color-text-muted);
+  --accent: var(--color-electric);
+  --accent-foreground: #ffffff;
+  --destructive: var(--danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-electric);
+
+  --radius: var(--radius-md); /* 12px base for shadcn */
+}
+
+/* App is dark-only for MVP. */
+html {
+  color-scheme: dark;
+}
+
+/* ============================================================
+   Tailwind theme — expose SurfRise scales as utilities (v4 @theme)
+   See SPEC_FRONTEND_StyleGuide.md §2.2
+   ============================================================ */
+@theme {
+  /* fonts */
+  --font-display: 'Inter Tight', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-heading: 'Archivo', 'Inter Tight', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  /* elevation */
+  --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 12px 28px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 24px 56px rgba(0, 0, 0, 0.55);
+  --shadow-focus: 0 0 0 3px rgba(61, 91, 255, 0.35);
+  --shadow-glow: 0 0 24px rgba(61, 91, 255, 0.35);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ============================================================
+   Map shadcn semantic vars into Tailwind's color utilities
+   (bg-background, text-foreground, border-border, …)
+   ============================================================ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* SurfRise brand scale (one accent only) */
+  --color-electric: var(--color-electric);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}

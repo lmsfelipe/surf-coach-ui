@@ -1,0 +1,87 @@
+/**
+ * Frontend mirrors of the API limits and enums. The server stays authoritative;
+ * these exist for fast client-side feedback and pt-BR option labels.
+ * Source: SPEC_FRONTEND_Overview.md §7/§8 + FRONTEND_INTEGRATION.md.
+ */
+
+// ---- Media upload rules -------------------------------------------------
+export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-m4v'] as const;
+export const ACCEPTED_MEDIA_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES] as const;
+
+/** `accept` attribute value for file inputs. */
+export const MEDIA_ACCEPT_ATTR = ACCEPTED_MEDIA_TYPES.join(',');
+
+export const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
+export const MAX_VIDEO_DURATION_SECONDS = 120;
+export const MAX_IMAGES_PER_SESSION = 3; // 1 video OR up to 3 images
+
+// ---- Enums + pt-BR option lists ----------------------------------------
+export const SURF_LEVELS = ['beginner', 'intermediate', 'advanced', 'pro'] as const;
+export type SurfLevel = (typeof SURF_LEVELS)[number];
+
+export const SURF_LEVEL_OPTIONS: ReadonlyArray<{ value: SurfLevel; label: string }> = [
+  { value: 'beginner', label: 'Iniciante' },
+  { value: 'intermediate', label: 'Intermediário' },
+  { value: 'advanced', label: 'Avançado' },
+  { value: 'pro', label: 'Profissional' },
+];
+
+export const BOARD_TYPES = [
+  'shortboard',
+  'longboard',
+  'funboard',
+  'bodyboard',
+  'other',
+] as const;
+export type BoardType = (typeof BOARD_TYPES)[number];
+
+// Surfer-English kept untranslated per StyleGuide §11.
+export const BOARD_TYPE_OPTIONS: ReadonlyArray<{ value: BoardType; label: string }> = [
+  { value: 'shortboard', label: 'Shortboard' },
+  { value: 'longboard', label: 'Longboard' },
+  { value: 'funboard', label: 'Funboard' },
+  { value: 'bodyboard', label: 'Bodyboard' },
+  { value: 'other', label: 'Outra' },
+];
+
+export const GENDERS = ['male', 'female'] as const;
+export type Gender = (typeof GENDERS)[number];
+
+export const GENDER_OPTIONS: ReadonlyArray<{ value: Gender; label: string }> = [
+  { value: 'male', label: 'Masculino' },
+  { value: 'female', label: 'Feminino' },
+];
+
+// ---- Score dimensions (StyleGuide §9) ----------------------------------
+export const SCORE_DIMENSIONS = [
+  'scoreFlow',
+  'scoreDrop',
+  'scoreBalance',
+  'scoreWaveSelection',
+  'scoreManeuvers',
+  'scoreArms',
+] as const;
+export type ScoreDimension = (typeof SCORE_DIMENSIONS)[number];
+
+export const SCORE_DIMENSION_LABELS: Record<ScoreDimension, string> = {
+  scoreFlow: 'Fluxo',
+  scoreDrop: 'Take-off & pop-up',
+  scoreBalance: 'Postura & equilíbrio',
+  scoreWaveSelection: 'Escolha da onda',
+  scoreManeuvers: 'Manobras',
+  scoreArms: 'Braços',
+};
+
+export const OVERALL_SCORE_LABEL = 'Nota geral';
+
+// ---- Validation bounds (mirror API; StyleGuide §8) ---------------------
+export const HEIGHT_CM = { min: 100, max: 250 } as const;
+export const WEIGHT_KG = { min: 30, max: 200 } as const;
+export const NAME_MAX = 200;
+export const LOCATION_MAX = 200;
+export const NOTES_MAX = 1000;
+export const LABEL_MAX = 200;
+
+// ---- Units (StyleGuide §8) ---------------------------------------------
+export const WAVE_SIZE_METERS = { min: 0, max: 4, step: 0.1 } as const;

@@ -1,0 +1,69 @@
+import { describe, expect, it } from 'vitest';
+import { surfboardFormSchema } from './surfboard';
+import { sessionFormSchema } from './session';
+import { onboardingSchema } from './profile';
+
+describe('surfboardFormSchema', () => {
+  it('accepts a valid board', () => {
+    const r = surfboardFormSchema.safeParse({ boardType: 'shortboard', boardSize: 6.2 });
+    expect(r.success).toBe(true);
+  });
+
+  it('rejects an unknown board type', () => {
+    const r = surfboardFormSchema.safeParse({ boardType: 'gun', boardSize: 6.2 });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a non-positive size', () => {
+    const r = surfboardFormSchema.safeParse({ boardType: 'longboard', boardSize: 0 });
+    expect(r.success).toBe(false);
+  });
+});
+
+describe('sessionFormSchema', () => {
+  it('accepts a valid session (meters)', () => {
+    const r = sessionFormSchema.safeParse({
+      sessionDate: '2026-06-01',
+      location: 'Maresias',
+      waveSizeMeters: 1.4,
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it('rejects a malformed date', () => {
+    const r = sessionFormSchema.safeParse({
+      sessionDate: '01/06/2026',
+      location: 'Maresias',
+      waveSizeMeters: 1.4,
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a non-positive wave size', () => {
+    const r = sessionFormSchema.safeParse({
+      sessionDate: '2026-06-01',
+      location: 'Maresias',
+      waveSizeMeters: 0,
+    });
+    expect(r.success).toBe(false);
+  });
+});
+
+describe('onboardingSchema', () => {
+  it('requires surfLevel, height and weight', () => {
+    expect(onboardingSchema.safeParse({}).success).toBe(false);
+    expect(
+      onboardingSchema.safeParse({ surfLevel: 'intermediate', heightCm: 180, weightKg: 75 })
+        .success,
+    ).toBe(true);
+  });
+
+  it('enforces height bounds', () => {
+    const r = onboardingSchema.safeParse({
+      surfLevel: 'beginner',
+      heightCm: 90,
+      weightKg: 75,
+    });
+    expect(r.success).toBe(false);
+  });
+});
