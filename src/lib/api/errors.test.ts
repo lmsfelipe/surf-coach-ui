@@ -8,6 +8,11 @@ describe('errorMessage', () => {
     expect(errorMessage('FILE_TOO_LARGE')).toMatch(/100 MB/);
   });
 
+  it('maps moderation codes to pt-BR', () => {
+    expect(errorMessage('MEDIA_NOT_SURF_RELATED')).toMatch(/surfe/i);
+    expect(errorMessage('EXPLICIT_CONTENT')).toMatch(/explícito/i);
+  });
+
   it('falls back for unknown codes', () => {
     expect(errorMessage('SOMETHING_NEW')).toBe('Algo deu errado. Tente de novo?');
   });

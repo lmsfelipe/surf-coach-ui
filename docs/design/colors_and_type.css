@@ -1,0 +1,209 @@
+/* ============================================================
+   SurfRise — Colors & Type · DARK DIRECTION
+   "Midnight Electric" — direction A from the dark exploration.
+   Light "Ocean Serenade" version preserved as colors_and_type-light.css
+   ============================================================ */
+
+/* Webfonts: Inter Tight (display/numerics) + Plus Jakarta Sans (UI/body) + Archivo (heading) */
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Archivo:wght@500;600;700;800&family=Pacifico&display=swap');
+
+:root {
+  /* -------- CORE PALETTE — 4 colors, no more -------- */
+  --color-midnight:    #0B1020;  /* canvas bg */
+  --color-surface:     #141B2E;  /* cards */
+  --color-surface-2:   #1A2236;  /* nested surfaces, sunken inputs +1 */
+  --color-electric:    #3D5BFF;  /* the ONE accent — links, primary actions, focus, highlights */
+
+  /* -------- NEUTRALS (whites with cool tint) -------- */
+  --color-white:       #FFFFFF;
+  --color-text:        #FFFFFF;  /* primary text */
+  --color-text-soft:   #B9C2DC;  /* secondary text, body copy on dark */
+  --color-text-muted:  #8590AB;  /* captions, helper, timestamps */
+  --color-text-faint:  #6C7891;  /* deep muted — disabled, hints */
+  --color-line:        #1F2740;  /* solid borders on surface */
+  --color-line-soft:   rgba(255,255,255,0.06); /* dividers inside cards */
+
+  /* -------- ELECTRIC RAMP (accent) -------- */
+  --eb-00: #EEF1FF;
+  --eb-12: #C5CEFF;
+  --eb-25: #9CABFF;
+  --eb-37: #7288FF;
+  --eb-50: #5872FF;
+  --eb-62: #4862FF;
+  --eb-75: #3D5BFF;  /* canonical */
+  --eb-87: #2C45D9;
+  --eb-100: #1F32A8;
+
+  /* -------- MIDNIGHT RAMP (depth) -------- */
+  --mn-00: #2A334D;
+  --mn-12: #232B43;
+  --mn-25: #1F2740;
+  --mn-37: #1A2236;
+  --mn-50: #141B2E;
+  --mn-62: #0F1525;
+  --mn-75: #0B1020;
+  --mn-87: #070B17;
+  --mn-100: #04060F;
+
+  /* -------- LEGACY-COMPATIBLE SEMANTIC TOKENS --------
+     Names match the old light system so existing components
+     (preview cards, UI kit, JSX) keep working unchanged. */
+  --color-lucky-point:     var(--color-electric);   /* was navy → now electric */
+  --color-cornflower-blue: var(--color-electric);   /* one accent only */
+  --color-perfume:         var(--color-surface-2);  /* surface+1 */
+  --color-link-water:      var(--color-surface-2);  /* surface+1 (legacy name) */
+  --color-coral:           var(--color-electric);   /* no more coral — collapsed */
+  --color-ink:             var(--color-text);
+  --color-paper:           var(--color-midnight);   /* page bg */
+  --color-muted:           var(--color-text-muted);
+
+  --bg:           var(--color-midnight);
+  --surface:      var(--color-surface);
+  --surface-alt:  var(--color-surface-2);
+  --border:       var(--color-line);
+  --text:         var(--color-text);
+  --text-muted:   var(--color-text-muted);
+  --brand:        var(--color-electric);
+  --action:       var(--color-electric);
+  --accent:       var(--color-electric);
+
+  --success:      #00C781;
+  --warning:      #FFB547;
+  --danger:       #FF4D6D;
+
+  /* -------- TYPE FAMILIES -------- */
+  --font-display: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body:    'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: 'Archivo', 'Inter Tight', system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* -------- TYPE SCALE -------- */
+  --fs-display: 48px;  --lh-display: 50px;  --tr-display: -0.045em;
+  --fs-h1:      28px;  --lh-h1:      34px;  --tr-h1:      -0.025em;
+  --fs-h2:      20px;  --lh-h2:      26px;  --tr-h2:      -0.01em;
+  --fs-h3:      16px;  --lh-h3:      22px;
+  --fs-eyebrow: 10px;  --lh-eyebrow: 14px;  --tr-eyebrow: 0.18em;
+  --fs-body-l:  14px;  --lh-body-l:  21px;
+  --fs-body:    12px;  --lh-body:    18px;
+  --fs-caption: 10px;  --lh-caption: 14px;
+  --fs-mono:    11px;  --lh-mono:    14px;
+
+  /* -------- SPACING (4px base) -------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* -------- RADII -------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  /* -------- ELEVATION (dark UI shadow + borders) -------- */
+  --shadow-sm: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 12px rgba(0,0,0,0.30);
+  --shadow-md: 0 1px 0 rgba(255,255,255,0.05) inset, 0 12px 28px rgba(0,0,0,0.40);
+  --shadow-lg: 0 1px 0 rgba(255,255,255,0.06) inset, 0 24px 56px rgba(0,0,0,0.55);
+  --shadow-focus: 0 0 0 3px rgba(61, 91, 255, 0.35);
+  --shadow-glow:  0 0 24px rgba(61, 91, 255, 0.35);
+
+  /* -------- MOTION -------- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:    120ms;
+  --dur-base:    200ms;
+  --dur-slow:    360ms;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+html, body { background: var(--bg); color: var(--text); }
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body-l);
+  line-height: var(--lh-body-l);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ============================================================
+   Semantic typography
+   ============================================================ */
+.t-display, h1.display {
+  font-family: var(--font-display);
+  font-weight: 300;                    /* light + huge = the brand signature */
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tr-display);
+  color: var(--text);
+  font-feature-settings: "tnum";
+}
+h1, .t-h1 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--fs-h1);
+  line-height: var(--lh-h1);
+  letter-spacing: var(--tr-h1);
+  color: var(--text);
+}
+h2, .t-h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  letter-spacing: var(--tr-h2);
+  color: var(--text);
+}
+h3, .t-h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
+  color: var(--text);
+}
+.t-eyebrow {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--fs-eyebrow);
+  line-height: var(--lh-eyebrow);
+  letter-spacing: var(--tr-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+p, .t-body-l {
+  font-family: var(--font-body);
+  font-size: var(--fs-body-l);
+  line-height: var(--lh-body-l);
+  color: var(--color-text-soft);
+}
+.t-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--color-text-soft);
+}
+.t-caption {
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  color: var(--text-muted);
+}
+.t-mono, code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  line-height: var(--lh-mono);
+  color: var(--text);
+}
+.t-numeric {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}

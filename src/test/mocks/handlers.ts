@@ -48,6 +48,26 @@ const sessions: Session[] = [
   },
 ];
 
+/** Per-test overrides for media upload error scenarios. Use with server.use(...). */
+export const mediaUploadHandlers = {
+  notSurfRelated: http.post(`${API}/api/v1/sessions/:sessionId/media`, () =>
+    HttpResponse.json(
+      envelope('MEDIA_NOT_SURF_RELATED', 'Uploaded media does not appear to be surf or water sports related.', {
+        reason: 'Shows a soccer game.',
+      }),
+      { status: 422 },
+    ),
+  ),
+  explicitContent: http.post(`${API}/api/v1/sessions/:sessionId/media`, () =>
+    HttpResponse.json(
+      envelope('EXPLICIT_CONTENT', 'Uploaded media contains explicit or offensive content.', {
+        reason: 'Contains nudity.',
+      }),
+      { status: 422 },
+    ),
+  ),
+};
+
 /** Default happy-path handlers. Override per-test with server.use(...). */
 export const handlers = [
   http.get(`${API}/me`, () => HttpResponse.json(profile)),

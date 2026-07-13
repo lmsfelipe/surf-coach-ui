@@ -75,6 +75,8 @@ export const ERROR_MESSAGES_PT_BR: Record<string, string> = {
   SURFBOARD_FORBIDDEN: 'Essa prancha não é sua.',
   REVIEW_NOT_FOUND: 'Análise não encontrada.',
   STORAGE_UPLOAD_FAILED: 'Não conseguimos enviar o arquivo. Tente de novo?',
+  MEDIA_NOT_SURF_RELATED: 'Este conteúdo não parece ser de surfe ou esportes aquáticos.',
+  EXPLICIT_CONTENT: 'O arquivo contém conteúdo explícito ou ofensivo e não pode ser enviado.',
   AI_GENERATION_FAILED: 'Não conseguimos gerar agora. Tente de novo?',
   AI_PARSE_FAILED: 'A análise veio em um formato inesperado. Tente de novo?',
   INTERNAL_ERROR: 'Algo deu errado do nosso lado. Tente de novo?',

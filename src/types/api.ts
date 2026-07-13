@@ -51,7 +51,8 @@ export interface Media {
   id: string;
   sessionId: string;
   mediaType: MediaType;
-  storageUrl: string;
+  /** Backend-relative content path with a short-lived signed token (~15min). */
+  contentUrl: string;
   fileName: string;
   fileSizeBytes: number | null;
   durationSeconds: number | null;

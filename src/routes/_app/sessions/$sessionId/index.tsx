@@ -1,0 +1,271 @@
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
+import { BOARD_TYPE_OPTIONS } from '@/config/constants';
+import { sessionQueryOptions, useSession } from '@/hooks/queries/sessions';
+import { mediaQueryOptions, useSessionMedia } from '@/hooks/queries/media';
+import { reviewBySessionOptions, useReviewBySession } from '@/hooks/queries/reviews';
+import { planByReviewOptions, usePlanByReview } from '@/hooks/queries/trainingPlans';
+import { surfboardsQueryOptions, useSurfboards } from '@/hooks/queries/surfboards';
+import { useDeleteSession } from '@/hooks/mutations/sessions';
+import { useDeleteMedia } from '@/hooks/mutations/media';
+import { toUserMessage } from '@/lib/api/errors';
+import { formatLongDate } from '@/utils/dates';
+import { formatWaveSize } from '@/utils/units';
+import type { Review, Session, Surfboard } from '@/types/api';
+import { AppHeader } from '@/components/layout/AppHeader';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Eyebrow } from '@/components/feedback/Eyebrow';
+import { ErrorState } from '@/components/feedback/ErrorState';
+import { MediaGallery } from '@/components/feedback/MediaGallery';
+import { SummaryRow } from '@/components/feedback/SummaryRow';
+import { SessionDetailSkeleton } from '@/components/skeletons';
+import {
+  IconBarbell,
+  IconBoard,
+  IconImage,
+  IconInfo,
+  IconSparkle,
+  IconTrash,
+  IconWave,
+} from '@/components/icons';
+
+export const Route = createFileRoute('/_app/sessions/$sessionId/')({
+  loader: async ({ context, params }) => {
+    const { sessionId } = params;
+    const [, , review] = await Promise.all([
+      context.queryClient.ensureQueryData(sessionQueryOptions(sessionId)),
+      context.queryClient.ensureQueryData(mediaQueryOptions(sessionId)),
+      context.queryClient.ensureQueryData(reviewBySessionOptions(sessionId)),
+      context.queryClient.ensureQueryData(surfboardsQueryOptions()),
+    ]);
+    if (review) {
+      await context.queryClient.ensureQueryData(planByReviewOptions(review.id));
+    }
+  },
+  pendingComponent: () => (
+    <>
+      <AppHeader onBack title="Sessão" hideAvatar />
+      <SessionDetailSkeleton />
+    </>
+  ),
+  errorComponent: ({ reset }) => (
+    <>
+      <AppHeader onBack title="Sessão" hideAvatar />
+      <div className="pt-9">
+        <ErrorState onRetry={reset} />
+      </div>
+    </>
+  ),
+  component: SessionDetailScreen,
+});
+
+function boardLabelFor(session: Session, boards: Surfboard[]): string | null {
+  if (!session.surfboardId) return null;
+  const board = boards.find((b) => b.id === session.surfboardId);
+  if (!board) return null;
+  return (
+    board.label || BOARD_TYPE_OPTIONS.find((o) => o.value === board.boardType)?.label || null
+  );
+}
+
+function HeroCard({
+  session,
+  boardLabel,
+  review,
+}: {
+  session: Session;
+  boardLabel: string | null;
+  review: Review | null;
+}) {
+  const score = review?.overallScore ?? null;
+  return (
+    <div className="relative overflow-hidden rounded-[18px] border border-border bg-[linear-gradient(160deg,#1A2236_0%,#141B2E_60%,#0B1020_100%)] p-[20px_22px] text-white shadow-[var(--shadow-md)]">
+      <div className="pointer-events-none absolute -right-[60px] -top-[60px] size-[220px] rounded-full bg-[radial-gradient(circle,rgba(61,91,255,0.45)_0%,rgba(61,91,255,0)_65%)] blur-lg" />
+      <div className="relative">
+        <div className="text-[13.5px] font-semibold text-white/90">{session.location}</div>
+        <div className="text-[11px] text-white/55">{formatLongDate(session.sessionDate)}</div>
+      </div>
+      {score != null && (
+        <div className="relative mt-4 flex items-baseline gap-3">
+          <div className="font-display text-[64px] font-light leading-none tabular-nums tracking-[-0.05em]">
+            {Math.floor(score)}
+            <span className="text-primary">.</span>
+            {Math.round((score - Math.floor(score)) * 10)}
+          </div>
+          <div className="text-[11px] leading-[15px] text-white/55">nota geral</div>
+        </div>
+      )}
+      <div className="relative mt-4 flex flex-wrap gap-2">
+        <Badge tone="muted">
+          <IconWave size={12} /> {formatWaveSize(session.waveSize)}
+        </Badge>
+        <Badge tone="muted">
+          <IconBoard size={12} /> {boardLabel || '—'}
+        </Badge>
+      </div>
+    </div>
+  );
+}
+
+/** Plan summary row — only rendered when a review exists (plan is ensured). */
+function PlanSummary({ reviewId, sessionId }: { reviewId: string; sessionId: string }) {
+  const { data: plan } = usePlanByReview(reviewId);
+  const exerciseCount = plan?.workouts.reduce((n, w) => n + w.exercises.length, 0) ?? 0;
+  if (plan) {
+    return (
+      <SummaryRow
+        icon={<IconBarbell size={18} />}
+        title={`${plan.workouts.length} treinos`}
+        sub={`${exerciseCount} exercícios`}
+        to="/sessions/$sessionId/plan"
+        params={{ sessionId }}
+      />
+    );
+  }
+  return (
+    <SummaryRow
+      icon={<IconBarbell size={18} />}
+      title="Gerar plano de treino"
+      sub="A partir desta análise"
+      to="/sessions/$sessionId/plan"
+      params={{ sessionId }}
+    />
+  );
+}
+
+function SessionDetailScreen() {
+  const { sessionId } = Route.useParams();
+  const navigate = useNavigate();
+  const { data: session } = useSession(sessionId);
+  const { data: media } = useSessionMedia(sessionId);
+  const { data: review } = useReviewBySession(sessionId);
+  const { data: boards } = useSurfboards();
+  const deleteSession = useDeleteSession();
+  const deleteMedia = useDeleteMedia(sessionId);
+  const boardLabel = boardLabelFor(session, boards);
+
+  async function handleDelete() {
+    try {
+      await deleteSession.mutateAsync(sessionId);
+      toast.success('Sessão excluída.');
+      await navigate({ to: '/sessions' });
+    } catch (err) {
+      toast.error(toUserMessage(err));
+    }
+  }
+
+  return (
+    <>
+      <AppHeader onBack title="Sessão" hideAvatar />
+      <div className="px-5 pt-1">
+        <HeroCard session={session} boardLabel={boardLabel} review={review} />
+
+        <section className="mt-[22px]">
+          <Eyebrow>Mídia</Eyebrow>
+          {media.length > 0 ? (
+            <MediaGallery
+              media={media}
+              // Once an analysis exists, the media set is locked — no adding more.
+              onAdd={
+                review
+                  ? undefined
+                  : () =>
+                      navigate({ to: '/sessions/$sessionId/upload', params: { sessionId } })
+              }
+              onDelete={review ? undefined : (id) => deleteMedia.mutate(id)}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() =>
+                navigate({ to: '/sessions/$sessionId/upload', params: { sessionId } })
+              }
+              className="flex w-full flex-col items-center gap-2 rounded-[18px] bg-card p-4 text-muted-foreground shadow-[var(--shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <div className="flex w-full flex-col items-center gap-2 rounded-xl border-[1.5px] border-dashed border-border bg-secondary py-[22px]">
+                <IconImage size={26} />
+                <span className="text-[12.5px] font-semibold text-soft">Adicionar mídia</span>
+                <span className="text-[11px] text-muted-foreground">1 vídeo ou até 3 fotos</span>
+              </div>
+            </button>
+          )}
+        </section>
+
+        <section className="mt-[22px]">
+          <Eyebrow>Análise</Eyebrow>
+          {review ? (
+            <SummaryRow
+              icon={<IconSparkle size={18} />}
+              title={`Nota ${review.overallScore?.toFixed(1) ?? '—'} · 6 aspectos`}
+              sub={review.improvementTips[0]}
+              to="/sessions/$sessionId/review"
+              params={{ sessionId }}
+            />
+          ) : media.length > 0 ? (
+            <SummaryRow
+              icon={<IconSparkle size={18} />}
+              title="Gerar análise"
+              sub="A IA analisa sua mídia em segundos"
+              to="/sessions/$sessionId/review"
+              params={{ sessionId }}
+            />
+          ) : (
+            <div className="flex items-center gap-2.5 rounded-[18px] bg-card p-4 shadow-[var(--shadow-sm)]">
+              <IconInfo size={17} className="text-[color:var(--color-text-faint)]" />
+              <span className="text-[12.5px] leading-[18px] text-muted-foreground">
+                Adicione mídia para analisar com a IA.
+              </span>
+            </div>
+          )}
+        </section>
+
+        {review && (
+          <section className="mt-[22px]">
+            <Eyebrow>Treino</Eyebrow>
+            <PlanSummary reviewId={review.id} sessionId={sessionId} />
+          </section>
+        )}
+
+        <div className="mt-6 flex justify-center pb-6">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-danger hover:bg-danger/10">
+                <IconTrash size={15} />
+                Excluir sessão
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir sessão?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Isso remove a mídia e a análise dessa sessão. Não dá pra desfazer.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-danger hover:bg-danger/90"
+                >
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="SurfRise mark">
+  <circle cx="24" cy="22" r="9" fill="#3D5BFF"></circle>
+  <path d="M4 36 C 11 36, 14 28, 22 28 C 31 28, 33 37, 42 36 C 45 35.6, 46 35, 47 33.5" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M34 28 C 36.5 25.5, 39 25.5, 41.5 28" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"></path>
+</svg>

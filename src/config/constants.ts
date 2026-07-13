@@ -14,7 +14,8 @@ export const MEDIA_ACCEPT_ATTR = ACCEPTED_MEDIA_TYPES.join(',');
 
 export const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
 export const MAX_VIDEO_DURATION_SECONDS = 120;
-export const MAX_IMAGES_PER_SESSION = 3; // 1 video OR up to 3 images
+export const MIN_IMAGES_PER_SESSION = 3; // photos require exactly 3
+export const MAX_IMAGES_PER_SESSION = 3; // 1 video OR exactly 3 images
 
 // ---- Enums + pt-BR option lists ----------------------------------------
 export const SURF_LEVELS = ['beginner', 'intermediate', 'advanced', 'pro'] as const;
