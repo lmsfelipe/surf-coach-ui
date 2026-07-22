@@ -8,7 +8,7 @@ import { profileQueryOptions } from '@/hooks/queries/profile';
 import { useUpdateProfile } from '@/hooks/mutations/profile';
 import { handleMutationError } from '@/lib/api/formErrors';
 import { isProfileComplete } from '@/lib/profile';
-import logoMark from '@/assets/logo-surfrise-mark.svg';
+import { WordmarkImage } from '@/components/layout/Wordmark';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,7 @@ function OnboardingScreen() {
   return (
     <div className="flex min-h-dvh flex-col">
       <div className="px-6 pt-[18px]">
-        <img src={logoMark} width={30} height={30} alt="" />
+        <WordmarkImage height={30} />
         <h1 className="mb-1 mt-3.5 font-heading text-[28px] font-extrabold tracking-[-0.025em] text-foreground">
           Bem-vindo!
         </h1>

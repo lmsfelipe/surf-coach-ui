@@ -59,12 +59,17 @@ export interface Media {
   createdAt: ISODateTime;
 }
 
+export type ReviewStatus = 'processing' | 'completed' | 'failed';
+export type PlanStatus = 'processing' | 'completed' | 'failed';
+
 export interface Review {
   id: string;
   sessionId: string;
   profileId: string;
-  narrative: string;
-  improvementTips: string[]; // exactly 3
+  status: ReviewStatus;
+  errorMessage: string | null;
+  narrative: string | null;
+  improvementTips: string[] | null;
   scoreFlow: number | null;
   scoreDrop: number | null;
   scoreBalance: number | null;
@@ -101,6 +106,8 @@ export interface TrainingPlan {
   id: string;
   reviewId: string;
   profileId: string;
+  status: PlanStatus;
+  errorMessage: string | null;
   generatedBy: string;
   aiModelVersion: string | null;
   createdAt: ISODateTime;

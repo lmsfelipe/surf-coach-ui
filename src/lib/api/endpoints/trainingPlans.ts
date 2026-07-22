@@ -14,7 +14,10 @@ export const trainingPlansApi = {
     api.get<TrainingPlan>(`/api/v1/reviews/${reviewId}/training-plan`),
   detail: (planId: string) => api.get<TrainingPlan>(`/api/v1/training-plans/${planId}`),
   workout: (workoutId: string) => api.get<Workout>(`/api/v1/workouts/${workoutId}`),
-  /** Slow AI call (5–20s) — explicit pending UI. */
+  /** Returns 202 with status:"processing" — seed cache and poll via detail. */
   create: (payload: CreateTrainingPlanPayload) =>
     api.post<TrainingPlan>('/api/v1/training-plans', payload),
+  /** Re-enqueues a failed plan. Returns 409 if not in "failed" state. */
+  retry: (planId: string) =>
+    api.post<TrainingPlan>(`/api/v1/training-plans/${planId}/retry`, {}),
 };

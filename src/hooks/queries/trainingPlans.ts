@@ -1,6 +1,7 @@
 import { queryOptions, useSuspenseQuery } from '@tanstack/react-query';
 import { trainingPlansApi } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/errors';
+import { usePollingWindow } from '@/hooks/usePollingWindow';
 import { qk } from '@/lib/queryKeys';
 import type { TrainingPlan } from '@/types/api';
 
@@ -32,6 +33,30 @@ export const planQueryOptions = (planId: string) =>
   });
 
 export const useTrainingPlans = () => useSuspenseQuery(trainingPlansListOptions());
-export const usePlanByReview = (reviewId: string) =>
-  useSuspenseQuery(planByReviewOptions(reviewId));
-export const usePlan = (planId: string) => useSuspenseQuery(planQueryOptions(planId));
+
+/**
+ * Polls when status is "processing" (schedule in `usePollingWindow`; the
+ * window re-arms after a retry). `timedOut` signals the window expired.
+ */
+export function usePlanByReview(reviewId: string) {
+  const poll = usePollingWindow();
+
+  const query = useSuspenseQuery({
+    ...planByReviewOptions(reviewId),
+    refetchInterval: (q) => poll.interval(q.state.data),
+  });
+
+  return { ...query, timedOut: poll.expired(query.data, query.isFetching) };
+}
+
+/** Polls the plan detail endpoint when status is "processing". */
+export function usePlan(planId: string) {
+  const poll = usePollingWindow();
+
+  const query = useSuspenseQuery({
+    ...planQueryOptions(planId),
+    refetchInterval: (q) => poll.interval(q.state.data),
+  });
+
+  return { ...query, timedOut: poll.expired(query.data, query.isFetching) };
+}

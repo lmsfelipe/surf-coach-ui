@@ -1,6 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { planQueryOptions, usePlan } from '@/hooks/queries/trainingPlans';
+import { useRetryTrainingPlan } from '@/hooks/mutations/trainingPlans';
 import { AppHeader } from '@/components/layout/AppHeader';
+import { AIState } from '@/components/feedback/AIState';
+import { Alert } from '@/components/feedback/Alert';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { WorkoutAccordion } from '@/components/feedback/WorkoutAccordion';
 import { PlanSkeleton } from '@/components/skeletons';
@@ -27,7 +30,45 @@ export const Route = createFileRoute('/_app/training-plans/$planId')({
 
 function PlanDetailScreen() {
   const { planId } = Route.useParams();
-  const { data: plan } = usePlan(planId);
+  const { data: plan, timedOut } = usePlan(planId);
+  const { mutate: retryPlan, isPending: isRetrying } = useRetryTrainingPlan();
+
+  if (plan.status === 'processing') {
+    return (
+      <>
+        <AppHeader onBack title="Treino" hideAvatar />
+        <div className="pt-[30px]">
+          <AIState
+            title="Montando seu treino…"
+            subtitle="Transformando os ajustes da análise em exercícios. Leva ~20s."
+          />
+          {timedOut && (
+            <div className="px-5 pt-4">
+              <Alert tone="warning">
+                O treino está demorando mais que o esperado. Tente recarregar a página em alguns instantes.
+              </Alert>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
+
+  if (plan.status === 'failed') {
+    return (
+      <>
+        <AppHeader onBack title="Treino" hideAvatar />
+        <div className="pt-9">
+          <ErrorState
+            title="Treino não concluído"
+            subtitle={plan.errorMessage ?? 'Não foi possível gerar o plano.'}
+            onRetry={isRetrying ? undefined : () => retryPlan({ planId: plan.id })}
+          />
+        </div>
+      </>
+    );
+  }
+
   const workouts = [...plan.workouts].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
   const exerciseCount = workouts.reduce((n, w) => n + w.exercises.length, 0);
 

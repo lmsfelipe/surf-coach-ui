@@ -1,29 +1,43 @@
 import { Link } from '@tanstack/react-router';
-import logoMark from '@/assets/logo-surfrise-mark.svg';
+import logo from '@/assets/logo-surfrise.png';
 import { cn } from '@/lib/utils';
 
-interface WordmarkProps {
-  /** Wordmark font size in px. */
-  size?: number;
-  markSize?: number;
+/** Intrinsic art size (824×328); width is derived from height so the ratio never drifts. */
+const ASPECT = 824 / 328;
+
+interface WordmarkImageProps {
+  /** Rendered height in px. Width follows the art's aspect ratio. */
+  height?: number;
+  /** Empty when an ancestor already labels the logo, so it isn't announced twice. */
+  alt?: string;
   className?: string;
 }
 
-/** SurfRise logo: mark + Pacifico wordmark with electric "Rise". Links home. */
-export function Wordmark({ size = 21, markSize = 26, className }: WordmarkProps) {
+/**
+ * SurfRise wordmark art — includes the lettering, so it needs no adjacent text.
+ * Light-on-transparent: only legible on the app's dark surfaces.
+ */
+export function WordmarkImage({ height = 28, alt = 'SurfRise', className }: WordmarkImageProps) {
+  return (
+    <img
+      src={logo}
+      width={Math.round(height * ASPECT)}
+      height={height}
+      alt={alt}
+      className={cn('block', className)}
+    />
+  );
+}
+
+/** SurfRise wordmark that links home. */
+export function Wordmark({ height, className }: Omit<WordmarkImageProps, 'alt'>) {
   return (
     <Link
       to="/sessions"
-      className={cn('flex items-center gap-1.5 leading-none', className)}
+      className={cn('flex items-center leading-none', className)}
       aria-label="SurfRise — início"
     >
-      <img src={logoMark} width={markSize} height={markSize} alt="" />
-      <span
-        className="font-['Pacifico',cursive] leading-none tracking-[-0.005em] text-foreground"
-        style={{ fontSize: size }}
-      >
-        Surf<span className="text-primary">Rise</span>
-      </span>
+      <WordmarkImage height={height} alt="" />
     </Link>
   );
 }

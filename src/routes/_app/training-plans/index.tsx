@@ -76,6 +76,7 @@ function TrainingPlansScreen() {
                 focus={plan.workouts[0]?.focusArea ?? 'Plano de treino'}
                 workouts={plan.workouts.length}
                 exercises={exerciseCount(plan)}
+                status={plan.status}
                 to="/training-plans/$planId"
                 params={{ planId: plan.id }}
               />

@@ -1,18 +1,28 @@
 import { Link, type LinkProps } from '@tanstack/react-router';
 import { Badge } from '@/components/ui/badge';
 import { IconChevronRight } from '@/components/icons';
+import type { PlanStatus } from '@/types/api';
 
 interface PlanCardProps {
   source: string;
   focus: string;
   workouts: number;
   exercises: number;
+  status: PlanStatus;
   to: LinkProps['to'];
   params?: LinkProps['params'];
 }
 
 /** Training-plan summary card linking to the plan detail. */
-export function PlanCard({ source, focus, workouts, exercises, to, params }: PlanCardProps) {
+export function PlanCard({
+  source,
+  focus,
+  workouts,
+  exercises,
+  status,
+  to,
+  params,
+}: PlanCardProps) {
   return (
     <Link
       to={to}
@@ -25,12 +35,26 @@ export function PlanCard({ source, focus, workouts, exercises, to, params }: Pla
           {focus}
         </div>
         <div className="flex flex-wrap gap-1.5">
-          <Badge tone="muted" size="sm">
-            {workouts} treinos
-          </Badge>
-          <Badge tone="muted" size="sm">
-            {exercises} exercícios
-          </Badge>
+          {status === 'processing' && (
+            <Badge tone="action" size="sm">
+              Gerando…
+            </Badge>
+          )}
+          {status === 'failed' && (
+            <Badge tone="danger" size="sm">
+              Falha na geração
+            </Badge>
+          )}
+          {status === 'completed' && (
+            <>
+              <Badge tone="muted" size="sm">
+                {workouts} treinos
+              </Badge>
+              <Badge tone="muted" size="sm">
+                {exercises} exercícios
+              </Badge>
+            </>
+          )}
         </div>
       </div>
       <IconChevronRight size={20} className="shrink-0 text-muted-foreground" />

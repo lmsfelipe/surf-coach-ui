@@ -2,7 +2,7 @@ import * as React from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { reviewBySessionOptions, useReviewBySession } from '@/hooks/queries/reviews';
 import { planByReviewOptions, usePlanByReview } from '@/hooks/queries/trainingPlans';
-import { useCreateTrainingPlan } from '@/hooks/mutations/trainingPlans';
+import { useCreateTrainingPlan, useRetryTrainingPlan } from '@/hooks/mutations/trainingPlans';
 import { ApiError } from '@/lib/api/errors';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { AIState } from '@/components/feedback/AIState';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { WorkoutAccordion } from '@/components/feedback/WorkoutAccordion';
+import { Alert } from '@/components/feedback/Alert';
 import { IconSparkle } from '@/components/icons';
 
 export const Route = createFileRoute('/_app/sessions/$sessionId/plan')({
@@ -57,8 +58,9 @@ function PlanScreen() {
 }
 
 function PlanContent({ reviewId, header }: { reviewId: string; header: React.ReactNode }) {
-  const { data: plan, refetch } = usePlanByReview(reviewId);
+  const { data: plan, refetch, timedOut } = usePlanByReview(reviewId);
   const createPlan = useCreateTrainingPlan(reviewId);
+  const { mutate: retryPlan, isPending: isRetrying } = useRetryTrainingPlan();
   const [errored, setErrored] = React.useState(false);
   const triggered = React.useRef(false);
 
@@ -110,6 +112,45 @@ function PlanContent({ reviewId, header }: { reviewId: string; header: React.Rea
     );
   }
 
+  // Plan row exists but the AI is still generating the workouts
+  if (plan.status === 'processing') {
+    return (
+      <>
+        {header}
+        <div className="pt-[30px]">
+          <AIState
+            title="Montando seu treino…"
+            subtitle="Transformando os ajustes da análise em exercícios. Leva ~20s."
+          />
+          {timedOut && (
+            <div className="px-5 pt-4">
+              <Alert tone="warning">
+                O treino está demorando mais que o esperado. Tente recarregar a página em alguns instantes.
+              </Alert>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
+
+  // Generation failed — show error with retry (polling resumes automatically)
+  if (plan.status === 'failed') {
+    return (
+      <>
+        {header}
+        <div className="pt-9">
+          <ErrorState
+            title="Treino não concluído"
+            subtitle={plan.errorMessage ?? 'Não foi possível gerar o plano.'}
+            onRetry={isRetrying ? undefined : () => retryPlan({ planId: plan.id })}
+          />
+        </div>
+      </>
+    );
+  }
+
+  // status === "completed"
   const workouts = [...plan.workouts].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
   const exerciseCount = workouts.reduce((n, w) => n + w.exercises.length, 0);
   const headline = workouts[0]?.focusArea ?? 'Plano de treino';

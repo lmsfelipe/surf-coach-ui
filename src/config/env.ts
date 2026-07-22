@@ -14,4 +14,8 @@ export const env = {
   supabaseUrl: required('VITE_SUPABASE_URL', import.meta.env.VITE_SUPABASE_URL),
   supabaseAnonKey: required('VITE_SUPABASE_ANON_KEY', import.meta.env.VITE_SUPABASE_ANON_KEY),
   avatarBucket: import.meta.env.VITE_SUPABASE_AVATAR_BUCKET ?? 'profile-media',
+  // Optional: Sentry stays a no-op (never initializes) when this is unset.
+  sentryDsn: import.meta.env.VITE_SENTRY_DSN,
+  // Optional: Google Analytics stays a no-op when this is unset.
+  gaMeasurementId: import.meta.env.VITE_GA_MEASUREMENT_ID,
 } as const;

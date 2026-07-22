@@ -1,4 +1,11 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import * as React from 'react';
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+  type ErrorComponentProps,
+} from '@tanstack/react-router';
+import { useQueryErrorResetBoundary } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { BOARD_TYPE_OPTIONS } from '@/config/constants';
 import { sessionQueryOptions, useSession } from '@/hooks/queries/sessions';
@@ -7,6 +14,7 @@ import { reviewBySessionOptions, useReviewBySession } from '@/hooks/queries/revi
 import { planByReviewOptions, usePlanByReview } from '@/hooks/queries/trainingPlans';
 import { surfboardsQueryOptions, useSurfboards } from '@/hooks/queries/surfboards';
 import { useDeleteSession } from '@/hooks/mutations/sessions';
+import { useRetryReview } from '@/hooks/mutations/reviews';
 import { useDeleteMedia } from '@/hooks/mutations/media';
 import { toUserMessage } from '@/lib/api/errors';
 import { formatLongDate } from '@/utils/dates';
@@ -60,16 +68,38 @@ export const Route = createFileRoute('/_app/sessions/$sessionId/')({
       <SessionDetailSkeleton />
     </>
   ),
-  errorComponent: ({ reset }) => (
+  errorComponent: SessionDetailError,
+  component: SessionDetailScreen,
+});
+
+/**
+ * Page-level fallback for genuine load failures (the session itself failed to
+ * load). Resetting the router boundary alone re-throws, because React Query
+ * caches the rejected query — so we also clear the query error boundary and
+ * re-run the loader, otherwise "Tentar de novo" is a no-op.
+ */
+function SessionDetailError({ reset }: ErrorComponentProps) {
+  const router = useRouter();
+  const queryErrorReset = useQueryErrorResetBoundary();
+
+  React.useEffect(() => {
+    queryErrorReset.reset();
+  }, [queryErrorReset]);
+
+  return (
     <>
       <AppHeader onBack title="Sessão" hideAvatar />
       <div className="pt-9">
-        <ErrorState onRetry={reset} />
+        <ErrorState
+          onRetry={() => {
+            reset();
+            void router.invalidate();
+          }}
+        />
       </div>
     </>
-  ),
-  component: SessionDetailScreen,
-});
+  );
+}
 
 function boardLabelFor(session: Session, boards: Surfboard[]): string | null {
   if (!session.surfboardId) return null;
@@ -115,6 +145,94 @@ function HeroCard({
           <IconBoard size={12} /> {boardLabel || '—'}
         </Badge>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Análise section. Every review status renders inline here — a failed review is
+ * a section-level state with its own retry, never a page-level error, so the
+ * rest of the session (hero, media, delete) stays usable.
+ */
+function ReviewSummary({
+  review,
+  sessionId,
+  hasMedia,
+}: {
+  review: Review | null;
+  sessionId: string;
+  hasMedia: boolean;
+}) {
+  const { mutate: retry, isPending: isRetrying } = useRetryReview();
+
+  if (review?.status === 'failed') {
+    return (
+      <SummaryRow
+        icon={<IconSparkle size={18} />}
+        title="Análise não concluída"
+        sub={review.errorMessage ?? 'A IA falhou ao processar a mídia.'}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isRetrying}
+            onClick={() =>
+              retry(
+                { reviewId: review.id },
+                { onError: (err) => toast.error(toUserMessage(err)) },
+              )
+            }
+          >
+            {isRetrying ? 'Tentando…' : 'Tentar de novo'}
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (review?.status === 'processing') {
+    return (
+      <SummaryRow
+        icon={<IconSparkle size={18} />}
+        title="Analisando sua sessão…"
+        sub="A IA está processando sua mídia."
+        to="/sessions/$sessionId/review"
+        params={{ sessionId }}
+      />
+    );
+  }
+
+  if (review) {
+    // completed — tips are only populated on this status.
+    return (
+      <SummaryRow
+        icon={<IconSparkle size={18} />}
+        title={`Nota ${review.overallScore?.toFixed(1) ?? '—'} · 6 aspectos`}
+        sub={review.improvementTips?.[0]}
+        to="/sessions/$sessionId/review"
+        params={{ sessionId }}
+      />
+    );
+  }
+
+  if (hasMedia) {
+    return (
+      <SummaryRow
+        icon={<IconSparkle size={18} />}
+        title="Gerar análise"
+        sub="A IA analisa sua mídia em segundos"
+        to="/sessions/$sessionId/review"
+        params={{ sessionId }}
+      />
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2.5 rounded-[18px] bg-card p-4 shadow-[var(--shadow-sm)]">
+      <IconInfo size={17} className="text-[color:var(--color-text-faint)]" />
+      <span className="text-[12.5px] leading-[18px] text-muted-foreground">
+        Adicione mídia para analisar com a IA.
+      </span>
     </div>
   );
 }
@@ -205,33 +323,14 @@ function SessionDetailScreen() {
 
         <section className="mt-[22px]">
           <Eyebrow>Análise</Eyebrow>
-          {review ? (
-            <SummaryRow
-              icon={<IconSparkle size={18} />}
-              title={`Nota ${review.overallScore?.toFixed(1) ?? '—'} · 6 aspectos`}
-              sub={review.improvementTips[0]}
-              to="/sessions/$sessionId/review"
-              params={{ sessionId }}
-            />
-          ) : media.length > 0 ? (
-            <SummaryRow
-              icon={<IconSparkle size={18} />}
-              title="Gerar análise"
-              sub="A IA analisa sua mídia em segundos"
-              to="/sessions/$sessionId/review"
-              params={{ sessionId }}
-            />
-          ) : (
-            <div className="flex items-center gap-2.5 rounded-[18px] bg-card p-4 shadow-[var(--shadow-sm)]">
-              <IconInfo size={17} className="text-[color:var(--color-text-faint)]" />
-              <span className="text-[12.5px] leading-[18px] text-muted-foreground">
-                Adicione mídia para analisar com a IA.
-              </span>
-            </div>
-          )}
+          <ReviewSummary
+            review={review}
+            sessionId={sessionId}
+            hasMedia={media.length > 0}
+          />
         </section>
 
-        {review && (
+        {review?.status === 'completed' && (
           <section className="mt-[22px]">
             <Eyebrow>Treino</Eyebrow>
             <PlanSummary reviewId={review.id} sessionId={sessionId} />

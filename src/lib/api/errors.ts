@@ -74,6 +74,8 @@ export const ERROR_MESSAGES_PT_BR: Record<string, string> = {
   SURFBOARD_NOT_FOUND: 'Prancha não encontrada.',
   SURFBOARD_FORBIDDEN: 'Essa prancha não é sua.',
   REVIEW_NOT_FOUND: 'Análise não encontrada.',
+  REVIEW_NOT_RETRYABLE: 'Somente análises com falha podem ser reagendadas.',
+  TRAINING_PLAN_NOT_RETRYABLE: 'Somente planos com falha podem ser reagendados.',
   STORAGE_UPLOAD_FAILED: 'Não conseguimos enviar o arquivo. Tente de novo?',
   MEDIA_NOT_SURF_RELATED: 'Este conteúdo não parece ser de surfe ou esportes aquáticos.',
   EXPLICIT_CONTENT: 'O arquivo contém conteúdo explícito ou ofensivo e não pode ser enviado.',

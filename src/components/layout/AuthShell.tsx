@@ -1,4 +1,4 @@
-import logoMark from '@/assets/logo-surfrise-mark.svg';
+import { WordmarkImage } from './Wordmark';
 
 interface AuthShellProps {
   children: React.ReactNode;
@@ -10,12 +10,7 @@ export function AuthShell({ children, foot }: AuthShellProps) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-7">
       <div className="mb-[30px] mt-10 flex justify-center">
-        <div className="flex items-center gap-2.5 leading-none">
-          <img src={logoMark} width={34} height={34} alt="" />
-          <span className="font-['Pacifico',cursive] text-[28px] leading-none text-foreground">
-            Surf<span className="text-primary">Rise</span>
-          </span>
-        </div>
+        <WordmarkImage height={40} />
       </div>
       <div className="flex-1">{children}</div>
       {foot && (

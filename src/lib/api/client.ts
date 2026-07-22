@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import { env } from '@/config/env';
 import { supabase } from '@/lib/supabase';
 import { getAccessToken, useAuthStore } from '@/stores/authStore';
@@ -67,7 +68,9 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   try {
     res = await rawFetch(path, options, getAccessToken());
   } catch {
-    throw new NetworkError();
+    const err = new NetworkError();
+    Sentry.captureException(err);
+    throw err;
   }
 
   if (res.status === 401 && !options.anonymous) {
@@ -77,7 +80,9 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
       try {
         res = await rawFetch(path, options, data.session.access_token);
       } catch {
-        throw new NetworkError();
+        const err = new NetworkError();
+        Sentry.captureException(err);
+        throw err;
       }
     }
     if (res.status === 401) {
@@ -86,7 +91,12 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     }
   }
 
-  if (!res.ok) throw await parseError(res);
+  if (!res.ok) {
+    const err = await parseError(res);
+    // Only report unexpected server failures; 4xx are handled UX, not bugs.
+    if (err.status >= 500) Sentry.captureException(err);
+    throw err;
+  }
   if (res.status === 204) return undefined as T;
 
   return (await res.json()) as T;

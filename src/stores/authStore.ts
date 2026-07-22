@@ -1,5 +1,7 @@
 import type { Session, User } from '@supabase/supabase-js';
+import * as Sentry from '@sentry/react';
 import { create } from 'zustand';
+import { identifyUser } from '@/lib/analytics';
 import { supabase } from '@/lib/supabase';
 
 interface AuthState {
@@ -16,7 +18,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   session: null,
   user: null,
   initialized: false,
-  setSession: (session) => set({ session, user: session?.user ?? null }),
+  setSession: (session) => {
+    const user = session?.user ?? null;
+    // Attribute Sentry events to the signed-in user; cleared on sign-out.
+    Sentry.setUser(user ? { id: user.id, email: user.email } : null);
+    // Keep GA's user_id in sync (pseudonymous id only, never PII); cleared on sign-out.
+    identifyUser(user?.id ?? null);
+    set({ session, user });
+  },
   setInitialized: (value) => set({ initialized: value }),
   signOut: async () => {
     await supabase.auth.signOut();

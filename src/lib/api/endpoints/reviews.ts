@@ -6,6 +6,8 @@ export const reviewsApi = {
   bySession: (sessionId: string) =>
     api.get<Review>(`/api/v1/sessions/${sessionId}/review`),
   detail: (id: string) => api.get<Review>(`/api/v1/reviews/${id}`),
-  /** Slow AI call (3–15s) — drive with explicit pending UI, not a skeleton. */
+  /** Returns 202 with status:"processing" — seed cache and poll via detail. */
   create: (payload: CreateReviewPayload) => api.post<Review>('/api/v1/reviews', payload),
+  /** Re-enqueues a failed review. Returns 409 if not in "failed" state. */
+  retry: (reviewId: string) => api.post<Review>(`/api/v1/reviews/${reviewId}/retry`, {}),
 };

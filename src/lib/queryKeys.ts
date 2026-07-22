@@ -21,6 +21,7 @@ export const qk = {
     detail: (id: string) => ['media', 'detail', id] as const,
   },
   reviews: {
+    all: () => ['reviews'] as const,
     bySession: (sessionId: string) => ['reviews', 'session', sessionId] as const,
     detail: (id: string) => ['reviews', 'detail', id] as const,
   },

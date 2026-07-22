@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { reviewBySessionOptions, useReviewBySession } from '@/hooks/queries/reviews';
 import { planByReviewOptions, usePlanByReview } from '@/hooks/queries/trainingPlans';
 import { useCreateReview } from '@/hooks/mutations/reviews';
+import { useRetryReview } from '@/hooks/mutations/reviews';
 import { ApiError } from '@/lib/api/errors';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { ReviewCard } from '@/components/feedback/ReviewCard';
 import { TipList } from '@/components/feedback/TipList';
 import { Link } from '@tanstack/react-router';
 import { IconBarbell, IconImage } from '@/components/icons';
+import { Alert } from '@/components/feedback/Alert';
 
 export const Route = createFileRoute('/_app/sessions/$sessionId/review')({
   loader: async ({ context, params }) => {
@@ -47,8 +49,9 @@ function PlanCta({ reviewId, sessionId }: { reviewId: string; sessionId: string 
 
 function ReviewScreen() {
   const { sessionId } = Route.useParams();
-  const { data: review, refetch } = useReviewBySession(sessionId);
+  const { data: review, refetch, timedOut } = useReviewBySession(sessionId);
   const createReview = useCreateReview(sessionId);
+  const { mutate: retry, isPending: isRetrying } = useRetryReview();
   const [errorCode, setErrorCode] = React.useState<string | null>(null);
   const triggered = React.useRef(false);
 
@@ -75,6 +78,7 @@ function ReviewScreen() {
 
   const header = <AppHeader onBack title="Análise" hideAvatar />;
 
+  // No review yet — either still creating (202 in flight) or create errored
   if (!review) {
     if (errorCode === 'NO_MEDIA_FOR_SESSION') {
       return (
@@ -125,6 +129,45 @@ function ReviewScreen() {
     );
   }
 
+  // Review exists but AI is still generating
+  if (review.status === 'processing') {
+    return (
+      <>
+        {header}
+        <div className="pt-[30px]">
+          <AIState
+            title="Analisando sua sessão…"
+            subtitle="A IA está assistindo seus take-offs. Leva menos de 30s."
+          />
+          {timedOut && (
+            <div className="px-5 pt-4">
+              <Alert tone="warning">
+                A análise está demorando mais que o esperado. Tente recarregar a página em alguns instantes.
+              </Alert>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
+
+  // Review failed — show error with retry
+  if (review.status === 'failed') {
+    return (
+      <>
+        {header}
+        <div className="pt-9">
+          <ErrorState
+            title="Análise não concluída"
+            subtitle={review.errorMessage ?? 'Não foi possível gerar a análise.'}
+            onRetry={isRetrying ? undefined : () => retry({ reviewId: review.id })}
+          />
+        </div>
+      </>
+    );
+  }
+
+  // status === "completed"
   return (
     <>
       {header}
@@ -138,12 +181,14 @@ function ReviewScreen() {
           </Card>
         </section>
 
-        <section className="mt-[22px]">
-          <Eyebrow>Análise da IA{review.aiModelVersion ? ` · ${review.aiModelVersion}` : ''}</Eyebrow>
-          <ReviewCard narrative={review.narrative} />
-        </section>
+        {review.narrative && (
+          <section className="mt-[22px]">
+            <Eyebrow>Análise da IA{review.aiModelVersion ? ` · ${review.aiModelVersion}` : ''}</Eyebrow>
+            <ReviewCard narrative={review.narrative} />
+          </section>
+        )}
 
-        {review.improvementTips.length > 0 && (
+        {review.improvementTips && review.improvementTips.length > 0 && (
           <section className="mt-[22px]">
             <Eyebrow>{review.improvementTips.length} ajustes pra próxima</Eyebrow>
             <TipList tips={review.improvementTips} />
