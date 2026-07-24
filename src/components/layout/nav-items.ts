@@ -1,10 +1,11 @@
 import { IconBarbell, IconBoard, IconHome, IconUser } from '@/components/icons';
+import type { IconComponent } from '@/components/icons';
 import type { LinkProps } from '@tanstack/react-router';
 
 export interface NavItem {
   to: LinkProps['to'];
   label: string;
-  icon: typeof IconHome;
+  icon: IconComponent;
 }
 
 export const NAV_ITEMS: NavItem[] = [

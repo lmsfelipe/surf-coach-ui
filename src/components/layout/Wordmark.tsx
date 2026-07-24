@@ -8,6 +8,8 @@ const ASPECT = 824 / 328;
 interface WordmarkImageProps {
   /** Rendered height in px. Width follows the art's aspect ratio. */
   height?: number;
+  /** Rendered width in px — the other half of the ratio. Wins over `height`. */
+  width?: number;
   /** Empty when an ancestor already labels the logo, so it isn't announced twice. */
   alt?: string;
   className?: string;
@@ -17,12 +19,18 @@ interface WordmarkImageProps {
  * SurfRise wordmark art — includes the lettering, so it needs no adjacent text.
  * Light-on-transparent: only legible on the app's dark surfaces.
  */
-export function WordmarkImage({ height = 28, alt = 'SurfRise', className }: WordmarkImageProps) {
+export function WordmarkImage({
+  height,
+  width,
+  alt = 'SurfRise',
+  className,
+}: WordmarkImageProps) {
+  const h = width != null ? width / ASPECT : (height ?? 28);
   return (
     <img
       src={logo}
-      width={Math.round(height * ASPECT)}
-      height={height}
+      width={Math.round(width ?? h * ASPECT)}
+      height={Math.round(h)}
       alt={alt}
       className={cn('block', className)}
     />
@@ -30,14 +38,14 @@ export function WordmarkImage({ height = 28, alt = 'SurfRise', className }: Word
 }
 
 /** SurfRise wordmark that links home. */
-export function Wordmark({ height, className }: Omit<WordmarkImageProps, 'alt'>) {
+export function Wordmark({ height, width, className }: Omit<WordmarkImageProps, 'alt'>) {
   return (
     <Link
       to="/sessions"
       className={cn('flex items-center leading-none', className)}
       aria-label="SurfRise — início"
     >
-      <WordmarkImage height={height} alt="" />
+      <WordmarkImage height={height} width={width} alt="" />
     </Link>
   );
 }

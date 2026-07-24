@@ -1,7 +1,4 @@
-interface IconProps {
-  size?: number;
-  className?: string;
-}
+import type { IconProps } from './types';
 
 /** Brand glyph — ported verbatim from the design export (icons.jsx). */
 export function IconBoard({ size = 24, className }: IconProps) {

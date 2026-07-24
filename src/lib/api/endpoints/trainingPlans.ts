@@ -16,7 +16,7 @@ export const trainingPlansApi = {
   workout: (workoutId: string) => api.get<Workout>(`/api/v1/workouts/${workoutId}`),
   /** Returns 202 with status:"processing" — seed cache and poll via detail. */
   create: (payload: CreateTrainingPlanPayload) =>
-    api.post<TrainingPlan>('/api/v1/training-plans', payload),
+    api.post<TrainingPlan>('/api/v1/training-plans/', payload),
   /** Re-enqueues a failed plan. Returns 409 if not in "failed" state. */
   retry: (planId: string) =>
     api.post<TrainingPlan>(`/api/v1/training-plans/${planId}/retry`, {}),

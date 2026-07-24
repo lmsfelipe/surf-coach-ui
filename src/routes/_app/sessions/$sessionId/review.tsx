@@ -5,6 +5,7 @@ import { planByReviewOptions, usePlanByReview } from '@/hooks/queries/trainingPl
 import { useCreateReview } from '@/hooks/mutations/reviews';
 import { useRetryReview } from '@/hooks/mutations/reviews';
 import { ApiError } from '@/lib/api/errors';
+import type { PlanStatus } from '@/types/api';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -32,6 +33,20 @@ export const Route = createFileRoute('/_app/sessions/$sessionId/review')({
   component: ReviewScreen,
 });
 
+/** Label tracks plan status — a failed plan must not read "Acessar". */
+function planCtaLabel(status: PlanStatus | undefined): string {
+  switch (status) {
+    case 'processing':
+      return 'Acompanhar seu treino';
+    case 'failed':
+      return 'Tentar gerar o treino de novo';
+    case 'completed':
+      return 'Acessar plano de treino';
+    default:
+      return 'Gerar plano de treino';
+  }
+}
+
 function PlanCta({ reviewId, sessionId }: { reviewId: string; sessionId: string }) {
   const navigate = useNavigate();
   const { data: plan } = usePlanByReview(reviewId);
@@ -42,7 +57,7 @@ function PlanCta({ reviewId, sessionId }: { reviewId: string; sessionId: string 
       onClick={() => navigate({ to: '/sessions/$sessionId/plan', params: { sessionId } })}
     >
       <IconBarbell size={18} />
-      {plan ? 'Acessar plano de treino' : 'Gerar plano de treino'}
+      {planCtaLabel(plan?.status)}
     </Button>
   );
 }

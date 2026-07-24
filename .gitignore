@@ -2,6 +2,9 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# incremental build state — stale entries make `tsc -b` skip real checks
+*.tsbuildinfo
 .env
 .env.*
 !.env.example

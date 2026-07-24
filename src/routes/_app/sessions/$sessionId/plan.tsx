@@ -3,7 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { reviewBySessionOptions, useReviewBySession } from '@/hooks/queries/reviews';
 import { planByReviewOptions, usePlanByReview } from '@/hooks/queries/trainingPlans';
 import { useCreateTrainingPlan, useRetryTrainingPlan } from '@/hooks/mutations/trainingPlans';
-import { ApiError } from '@/lib/api/errors';
+import { ApiError, errorMessage } from '@/lib/api/errors';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,39 @@ export const Route = createFileRoute('/_app/sessions/$sessionId/plan')({
   component: PlanScreen,
 });
 
+/** Sends the user back to the analysis — the plan is derived from it. */
+function NeedsReview({
+  sessionId,
+  title,
+  subtitle,
+  header,
+}: {
+  sessionId: string;
+  title: string;
+  subtitle: string;
+  header: React.ReactNode;
+}) {
+  return (
+    <>
+      {header}
+      <div className="pt-9">
+        <EmptyState
+          icon={<IconSparkle />}
+          title={title}
+          subtitle={subtitle}
+          cta={
+            <Button asChild>
+              <Link to="/sessions/$sessionId/review" params={{ sessionId }}>
+                Ver análise
+              </Link>
+            </Button>
+          }
+        />
+      </div>
+    </>
+  );
+}
+
 function PlanScreen() {
   const { sessionId } = Route.useParams();
   const { data: review } = useReviewBySession(sessionId);
@@ -34,23 +67,37 @@ function PlanScreen() {
 
   if (!review) {
     return (
-      <>
-        {header}
-        <div className="pt-9">
-          <EmptyState
-            icon={<IconSparkle />}
-            title="Analise a sessão primeiro"
-            subtitle="O treino é montado a partir da análise da IA."
-            cta={
-              <Button asChild>
-                <Link to="/sessions/$sessionId/review" params={{ sessionId }}>
-                  Ver análise
-                </Link>
-              </Button>
-            }
-          />
-        </div>
-      </>
+      <NeedsReview
+        sessionId={sessionId}
+        header={header}
+        title="Analise a sessão primeiro"
+        subtitle="O treino é montado a partir da análise da IA."
+      />
+    );
+  }
+
+  // The backend rejects a plan built on an unfinished analysis, so don't let
+  // PlanContent auto-fire the create and surface that as a generic failure.
+  // useReviewBySession is polling here, so this resolves on its own.
+  if (review.status === 'processing') {
+    return (
+      <NeedsReview
+        sessionId={sessionId}
+        header={header}
+        title="Aguardando a análise"
+        subtitle="Assim que a IA terminar de analisar a sessão, dá pra montar o treino."
+      />
+    );
+  }
+
+  if (review.status === 'failed') {
+    return (
+      <NeedsReview
+        sessionId={sessionId}
+        header={header}
+        title="A análise não foi concluída"
+        subtitle="O treino sai da análise. Tente gerar a análise de novo primeiro."
+      />
     );
   }
 
@@ -61,18 +108,18 @@ function PlanContent({ reviewId, header }: { reviewId: string; header: React.Rea
   const { data: plan, refetch, timedOut } = usePlanByReview(reviewId);
   const createPlan = useCreateTrainingPlan(reviewId);
   const { mutate: retryPlan, isPending: isRetrying } = useRetryTrainingPlan();
-  const [errored, setErrored] = React.useState(false);
+  const [errorCode, setErrorCode] = React.useState<string | null>(null);
   const triggered = React.useRef(false);
 
   const generate = React.useCallback(() => {
-    setErrored(false);
+    setErrorCode(null);
     createPlan.mutate(undefined, {
       onError: (err) => {
         if (err instanceof ApiError && err.code === 'TRAINING_PLAN_ALREADY_EXISTS') {
           void refetch();
           return;
         }
-        setErrored(true);
+        setErrorCode(err instanceof ApiError ? err.code : 'AI_GENERATION_FAILED');
       },
     });
   }, [createPlan, refetch]);
@@ -85,14 +132,14 @@ function PlanContent({ reviewId, header }: { reviewId: string; header: React.Rea
   }, [plan, generate]);
 
   if (!plan) {
-    if (errored) {
+    if (errorCode) {
       return (
         <>
           {header}
           <div className="pt-9">
             <ErrorState
               title="Não conseguimos gerar o treino."
-              subtitle="A IA falhou ao montar o plano. Tenta de novo?"
+              subtitle={errorMessage(errorCode)}
               onRetry={generate}
             />
           </div>

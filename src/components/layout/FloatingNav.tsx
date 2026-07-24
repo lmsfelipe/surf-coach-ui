@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { IconBarbell, IconBoard, IconHome, IconPlus, IconUser } from '@/components/icons';
+import type { IconComponent } from '@/components/icons';
 
 // --- cradle geometry (fixed radii; only the flat top segments flex with width)
 const H = 66, R = 26, CRADLE = 37, FILLET = 12;
@@ -33,7 +34,7 @@ type TabId = 'sessions' | 'boards' | 'training-plans' | 'profile';
 interface Tab {
   id: TabId;
   to: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: IconComponent;
   x: number;
 }
 
@@ -63,7 +64,9 @@ export function FloatingNav() {
 
   useLayoutEffect(() => {
     if (!ref.current) return;
-    const ro = new ResizeObserver(([e]) => setW(e.contentRect.width));
+    const ro = new ResizeObserver(([e]) => {
+      if (e) setW(e.contentRect.width);
+    });
     ro.observe(ref.current);
     return () => ro.disconnect();
   }, []);

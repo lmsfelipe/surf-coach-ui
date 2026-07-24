@@ -59,6 +59,22 @@ describe('createPollingWindow', () => {
     expect(poll.expired(completed, false)).toBe(false);
   });
 
+  it('polls a list while any item is still processing', () => {
+    const poll = createPollingWindow();
+
+    expect(poll.interval([])).toBe(false);
+    expect(poll.interval([completed, failed])).toBe(false);
+
+    // One generating plan is enough to arm the window.
+    expect(poll.interval([completed, processing, failed])).toBe(3_000);
+
+    vi.advanceTimersByTime(31_000);
+    expect(poll.interval([completed, processing])).toBe(10_000);
+
+    // Once everything settles, the list stops polling.
+    expect(poll.interval([completed, completed])).toBe(false);
+  });
+
   it('re-arms a fresh window when processing resumes after a retry', () => {
     const poll = createPollingWindow();
 

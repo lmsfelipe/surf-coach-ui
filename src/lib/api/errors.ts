@@ -95,6 +95,6 @@ export function errorMessage(code: string): string {
 /** Resolve any thrown value to a pt-BR message for toasts/inline display. */
 export function toUserMessage(err: unknown): string {
   if (err instanceof ApiError) return err.userMessage;
-  if (err instanceof NetworkError) return ERROR_MESSAGES_PT_BR.NETWORK_ERROR;
+  if (err instanceof NetworkError) return errorMessage('NETWORK_ERROR');
   return FALLBACK_MESSAGE;
 }

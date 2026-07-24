@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import type { Session } from '@/types/api';
 import { formatShortDate } from '@/utils/dates';
 import { formatWaveSize } from '@/utils/units';
+import { scoreColor } from '@/utils/score';
 import { Badge } from '@/components/ui/badge';
 import { ScoreChipSkeleton } from '@/components/skeletons';
 import { IconBoard, IconChevronRight, IconWave } from '@/components/icons';
@@ -34,7 +35,10 @@ export function SessionCard({ session, boardLabel, score }: SessionCardProps) {
           {score === 'loading' ? (
             <ScoreChipSkeleton />
           ) : score != null ? (
-            <span className="font-display text-[32px] font-light leading-none tabular-nums tracking-[-0.045em] text-foreground">
+            <span
+              className="font-display text-[32px] font-bold leading-none tabular-nums tracking-[-0.045em]"
+              style={{ color: scoreColor(score) }}
+            >
               {score.toFixed(1)}
             </span>
           ) : (

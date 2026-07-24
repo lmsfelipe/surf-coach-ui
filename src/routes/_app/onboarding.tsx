@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
@@ -15,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { SubmitBar } from '@/components/layout/SubmitBar';
 import { SelectField } from '@/components/forms/SelectField';
 import { NumberField } from '@/components/forms/NumberField';
-import { AvatarUploader } from '@/components/forms/AvatarUploader';
 import { DotPulser } from '@/components/feedback/DotPulser';
 import { HEIGHT_CM, WEIGHT_KG } from '@/config/constants';
 
@@ -32,17 +30,13 @@ export const Route = createFileRoute('/_app/onboarding')({
 function OnboardingScreen() {
   const navigate = useNavigate();
   const updateProfile = useUpdateProfile();
-  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
   const form = useForm<OnboardingValues>({
     resolver: zodResolver(onboardingSchema),
   });
 
   async function onSubmit(values: OnboardingValues) {
     try {
-      await updateProfile.mutateAsync({
-        ...values,
-        ...(avatarUrl ? { avatarUrl } : {}),
-      });
+      await updateProfile.mutateAsync(values);
       await navigate({ to: '/sessions' });
     } catch (err) {
       handleMutationError(err, form.setError);
@@ -101,12 +95,6 @@ function OnboardingScreen() {
                 label="Gênero"
                 optional
                 options={GENDER_OPTIONS}
-              />
-              <div className="mb-1 text-xs font-semibold text-foreground">Foto de perfil</div>
-              <AvatarUploader
-                value={avatarUrl}
-                initials="?"
-                onUploaded={setAvatarUrl}
               />
             </Card>
           </div>

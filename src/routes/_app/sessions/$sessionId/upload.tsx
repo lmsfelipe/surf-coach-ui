@@ -32,12 +32,12 @@ function formatBytes(bytes: number): string {
 function FileRow({
   file,
   error,
-  progress,
+  uploading,
   onRemove,
 }: {
   file: File;
   error?: FileError;
-  progress: number | null;
+  uploading: boolean;
   onRemove: () => void;
 }) {
   return (
@@ -46,7 +46,7 @@ function FileRow({
         {file.type.startsWith('image/') ? <IconImage size={18} /> : <IconVideo size={18} />}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex items-baseline justify-between gap-2">
+        <div className="flex items-baseline justify-between gap-2">
           <span className="truncate text-[12.5px] font-semibold text-foreground">
             {file.name}
           </span>
@@ -54,18 +54,14 @@ function FileRow({
             {formatBytes(file.size)}
           </span>
         </div>
-        {error ? (
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-danger">
+        {error && (
+          <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-danger">
             <IconAlertCircle size={12} />
             {error.message}
           </div>
-        ) : (
-          <div className="h-1 overflow-hidden rounded-full bg-white/[0.08]">
-            <div className="h-full bg-primary" style={{ width: `${progress ?? 0}%` }} />
-          </div>
         )}
       </div>
-      {progress == null && (
+      {!uploading && (
         <button
           type="button"
           onClick={onRemove}
@@ -90,7 +86,7 @@ function UploadScreen() {
   const [files, setFiles] = React.useState<File[]>([]);
   const [fileErrors, setFileErrors] = React.useState<Map<File, FileError>>(new Map());
   const [selectionError, setSelectionError] = React.useState<string | null>(null);
-  const [progress, setProgress] = React.useState<number | null>(null);
+  const isUploading = uploadMedia.isPending;
 
   async function applySelection(next: File[]) {
     setFiles(next);
@@ -112,13 +108,12 @@ function UploadScreen() {
 
   const valid = files.filter((f) => !fileErrors.has(f));
   const hasErrors = fileErrors.size > 0 || selectionError != null;
-  const canSubmit = valid.length > 0 && !hasErrors && progress == null;
+  const canSubmit = valid.length > 0 && !hasErrors && !isUploading;
 
   async function handleUpload() {
     if (!canSubmit) return;
-    setProgress(0);
     try {
-      await uploadMedia.mutateAsync({ files: valid, onProgress: setProgress });
+      await uploadMedia.mutateAsync({ files: valid });
       toast.success('Mídia enviada.');
       await navigate({ to: '/sessions/$sessionId', params: { sessionId } });
     } catch (err) {
@@ -128,11 +123,10 @@ function UploadScreen() {
       if (err instanceof ApiError && err.code === 'EXPLICIT_CONTENT') {
         setFiles([]);
       }
-      setProgress(null);
     }
   }
 
-  const submitLabel = hasErrors ? 'Corrija os arquivos' : progress != null ? 'Enviando…' : 'Enviar';
+  const submitLabel = hasErrors ? 'Corrija os arquivos' : 'Enviar';
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -184,7 +178,7 @@ function UploadScreen() {
                   key={`${file.name}-${file.size}`}
                   file={file}
                   error={fileErrors.get(file)}
-                  progress={progress != null && !fileErrors.has(file) ? progress : null}
+                  uploading={isUploading}
                   onRemove={() => removeFile(file)}
                 />
               ))}
@@ -205,7 +199,7 @@ function UploadScreen() {
       </div>
       <SubmitBar>
         <Button size="lg" className="w-full" disabled={!canSubmit} onClick={handleUpload}>
-          {progress != null ? <DotPulser /> : submitLabel}
+          {isUploading ? <DotPulser /> : submitLabel}
         </Button>
       </SubmitBar>
     </div>

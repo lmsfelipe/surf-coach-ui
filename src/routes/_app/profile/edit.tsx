@@ -12,7 +12,6 @@ import { profileFormSchema, type ProfileFormValues } from '@/schemas/profile';
 import { profileQueryOptions, useProfile } from '@/hooks/queries/profile';
 import { useUpdateProfile } from '@/hooks/mutations/profile';
 import { handleMutationError } from '@/lib/api/formErrors';
-import { initialsFor } from '@/components/layout/ProfileAvatar';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
@@ -21,7 +20,6 @@ import { TextField } from '@/components/forms/TextField';
 import { SelectField } from '@/components/forms/SelectField';
 import { NumberField } from '@/components/forms/NumberField';
 import { DateField } from '@/components/forms/DateField';
-import { AvatarUploader } from '@/components/forms/AvatarUploader';
 import { DotPulser } from '@/components/feedback/DotPulser';
 
 export const Route = createFileRoute('/_app/profile/edit')({
@@ -56,21 +54,10 @@ function EditProfileScreen() {
     }
   }
 
-  function handleAvatar(url: string) {
-    updateProfile.mutate({ avatarUrl: url }, { onSuccess: () => toast.success('Foto atualizada.') });
-  }
-
   return (
     <div>
       <AppHeader onBack title="Editar perfil" hideAvatar />
       <div className="px-5 pb-8 pt-1.5">
-        <div className="mb-[18px]">
-          <AvatarUploader
-            value={profile.avatarUrl}
-            initials={initialsFor(profile.name, profile.email)}
-            onUploaded={handleAvatar}
-          />
-        </div>
         <Form {...form}>
           <form id="profile-edit" onSubmit={form.handleSubmit(onSubmit)}>
             <Card>

@@ -1,4 +1,5 @@
 import { useRouter } from '@tanstack/react-router';
+import { cn } from '@/lib/utils';
 import { IconChevronLeft } from '@/components/icons';
 import { Wordmark } from './Wordmark';
 import { ProfileAvatar } from './ProfileAvatar';
@@ -22,7 +23,13 @@ export function AppHeader({ title, onBack, action, hideAvatar }: AppHeaderProps)
   };
 
   return (
-    <header className="flex min-h-11 items-center justify-between gap-3 px-5 pb-2.5 pt-1.5">
+    <header
+      className={cn(
+        'flex min-h-11 items-center justify-between gap-3 px-5 pt-1.5',
+        // The wordmark carries 16px below it; back-button screens stay tighter.
+        onBack ? 'pb-2.5' : 'pb-4',
+      )}
+    >
       {onBack ? (
         <button
           type="button"
@@ -33,7 +40,7 @@ export function AppHeader({ title, onBack, action, hideAvatar }: AppHeaderProps)
           <IconChevronLeft size={20} />
         </button>
       ) : (
-        <Wordmark />
+        <Wordmark width={100} />
       )}
 
       {title && (

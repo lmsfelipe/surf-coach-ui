@@ -9,8 +9,21 @@ function required(name: string, value: string | undefined): string {
   return value;
 }
 
+/**
+ * Required in production builds, but falls back to the local default in dev so
+ * a fresh clone runs without a .env. A shipped build must never silently point
+ * at localhost — that fails as a hang at request time rather than at startup.
+ */
+function requiredInProd(name: string, value: string | undefined, devFallback: string): string {
+  return import.meta.env.PROD ? required(name, value) : (value ?? devFallback);
+}
+
 export const env = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000',
+  apiBaseUrl: requiredInProd(
+    'VITE_API_BASE_URL',
+    import.meta.env.VITE_API_BASE_URL,
+    'http://localhost:8000',
+  ),
   supabaseUrl: required('VITE_SUPABASE_URL', import.meta.env.VITE_SUPABASE_URL),
   supabaseAnonKey: required('VITE_SUPABASE_ANON_KEY', import.meta.env.VITE_SUPABASE_ANON_KEY),
   avatarBucket: import.meta.env.VITE_SUPABASE_AVATAR_BUCKET ?? 'profile-media',

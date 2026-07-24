@@ -1,5 +1,6 @@
 import { createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
+import { NotFound } from '@/components/feedback/NotFound';
 import { queryClient } from '@/lib/queryClient';
 
 export const router = createRouter({
@@ -7,6 +8,7 @@ export const router = createRouter({
   context: { queryClient },
   defaultPreload: 'intent',
   scrollRestoration: true,
+  defaultNotFoundComponent: NotFound,
 });
 
 declare module '@tanstack/react-router' {

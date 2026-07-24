@@ -29,10 +29,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  // Generate source maps so Sentry can un-minify stack traces; the plugin
-  // strips them from the final assets after upload.
   build: {
-    sourcemap: true,
+    // Only emit source maps when Sentry can actually consume them: the plugin
+    // uploads the maps and then strips them from the deployed assets. Emitting
+    // them without the plugin would publish the full unminified source to the
+    // CDN alongside the bundle, so in that case don't generate them at all.
+    sourcemap: Boolean(sentryAuthToken),
   },
   server: {
     port: 5173,

@@ -6,7 +6,8 @@ import type { TrainingPlan } from '@/types/api';
 
 /**
  * Creates a training plan. Backend returns 202 with status:"processing".
- * Seeds both caches so usePlanByReview starts polling from the right state.
+ * Seeds both caches so usePlanByReview starts polling from the right state,
+ * and invalidates the list so the new plan shows up on the Treinos tab.
  */
 export function useCreateTrainingPlan(reviewId: string) {
   const queryClient = useQueryClient();
@@ -15,6 +16,7 @@ export function useCreateTrainingPlan(reviewId: string) {
     onSuccess: (plan: TrainingPlan) => {
       queryClient.setQueryData(qk.trainingPlans.byReview(reviewId), plan);
       queryClient.setQueryData(qk.trainingPlans.detail(plan.id), plan);
+      void queryClient.invalidateQueries({ queryKey: qk.trainingPlans.list() });
     },
   });
 }
@@ -30,6 +32,8 @@ export function useRetryTrainingPlan() {
     onSuccess: (plan: TrainingPlan) => {
       queryClient.setQueryData(qk.trainingPlans.detail(plan.id), plan);
       queryClient.setQueryData(qk.trainingPlans.byReview(plan.reviewId), plan);
+      // The list card renders status, so it has to see the "processing" flip too.
+      void queryClient.invalidateQueries({ queryKey: qk.trainingPlans.list() });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.code === 'TRAINING_PLAN_NOT_RETRYABLE') {

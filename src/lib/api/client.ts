@@ -50,11 +50,17 @@ async function rawFetch(path: string, options: RequestOptions, token: string | n
   });
 }
 
+/**
+ * `_auth` is a pathless layout route, so the auth screens live at the root
+ * (`/login`, not `/auth/login`) — see routeTree.gen.ts.
+ */
+const AUTH_PATHS = new Set(['/login', '/signup', '/forgot-password', '/reset-password']);
+
 /** Force-logout path when refresh fails. */
 async function forceSignOut(): Promise<void> {
   await useAuthStore.getState().signOut();
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-    window.location.assign('/auth/login');
+  if (typeof window !== 'undefined' && !AUTH_PATHS.has(window.location.pathname)) {
+    window.location.assign('/login');
   }
 }
 

@@ -32,7 +32,19 @@ export const planQueryOptions = (planId: string) =>
     queryFn: () => trainingPlansApi.detail(planId),
   });
 
-export const useTrainingPlans = () => useSuspenseQuery(trainingPlansListOptions());
+/**
+ * Treinos tab. Polls while any plan in the list is still generating — the
+ * cards render a "Gerando…" badge, so the list has to be able to leave that
+ * state without a manual reload.
+ */
+export function useTrainingPlans() {
+  const poll = usePollingWindow();
+
+  return useSuspenseQuery({
+    ...trainingPlansListOptions(),
+    refetchInterval: (q) => poll.interval(q.state.data),
+  });
+}
 
 /**
  * Polls when status is "processing" (schedule in `usePollingWindow`; the

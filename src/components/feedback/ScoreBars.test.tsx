@@ -8,6 +8,8 @@ function review(overrides: Partial<Review>): Review {
     id: 'r1',
     sessionId: 's1',
     profileId: 'p1',
+    status: 'completed',
+    errorMessage: null,
     narrative: '',
     improvementTips: ['a', 'b', 'c'],
     scoreFlow: 6.8,
@@ -32,12 +34,26 @@ describe('ScoreBars', () => {
     expect(screen.getByText('8.1')).toBeInTheDocument();
   });
 
-  it('accents the highest-scoring row (kit default)', () => {
+  it('accents the highest-scoring row', () => {
     render(<ScoreBars review={review({})} />);
-    const highest = screen.getByText('8.1');
-    expect(highest).toHaveStyle({ color: 'var(--accent)' });
+    expect(screen.getByText('8.1')).toHaveStyle({ color: 'var(--accent)' });
     // a lower row carries no inline accent color
     expect(screen.getByText('6.2').getAttribute('style') ?? '').not.toContain('--accent');
+  });
+
+  it('colors every other row by the value ramp', () => {
+    render(<ScoreBars review={review({ scoreManeuvers: 3.4, scoreWaveSelection: 9.2 })} />);
+    expect(screen.getByText('3.4')).toHaveStyle({ color: 'var(--danger)' }); // < 4
+    expect(screen.getByText('6.2')).toHaveStyle({ color: 'var(--warning)' }); // 4–7
+    expect(screen.getByText('7.5')).toHaveStyle({ color: 'var(--success)' }); // ≥ 7
+  });
+
+  it('paints the bar with its row color', () => {
+    render(<ScoreBars review={review({})} />);
+    // The bar is the fill inside the track that follows the value.
+    const row = screen.getByText('6.2').closest('div')?.parentElement;
+    const bar = row?.querySelector<HTMLElement>('div[style*="width"]');
+    expect(bar).toHaveStyle({ width: '62%', background: 'var(--warning)' });
   });
 
   it('renders nothing when all dimensions are null', () => {

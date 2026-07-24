@@ -101,10 +101,9 @@ function SessionsScreen() {
     <>
       <AppHeader />
       <div className="px-5 pb-3 pt-0.5">
-        <h1 className="m-0 font-heading text-[26px] font-extrabold leading-8 tracking-[-0.025em] text-foreground">
-          {greeting()},<br />
-          {firstName ? `${firstName}.` : 'surfista.'}
-        </h1>
+        <h3 className="t-h3 m-0">
+          {greeting()}, {firstName ? `${firstName}.` : 'surfista.'}
+        </h3>
       </div>
 
       {sessions.length === 0 ? (

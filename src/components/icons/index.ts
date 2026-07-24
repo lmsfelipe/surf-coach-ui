@@ -3,6 +3,8 @@
  * everything else maps to lucide-react under SurfRise names so call sites stay
  * stable if the underlying icon swaps.
  */
+export type { IconComponent, IconProps } from './types';
+
 export { IconWave } from './IconWave';
 export { IconBoard } from './IconBoard';
 

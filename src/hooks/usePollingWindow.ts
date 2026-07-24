@@ -9,6 +9,16 @@ interface Pollable {
   status: 'processing' | 'completed' | 'failed';
 }
 
+/** A single resource or a list of them (the Treinos tab polls the whole list). */
+type PollTarget = Pollable | readonly Pollable[] | null | undefined;
+
+/** True when the target — or any item in it — is still generating. */
+function isProcessing(data: PollTarget): boolean {
+  if (!data) return false;
+  if (Array.isArray(data)) return data.some((item) => item.status === 'processing');
+  return (data as Pollable).status === 'processing';
+}
+
 /**
  * Polling schedule for async AI resources (reviews, training plans): every
  * 3 s for the first 30 s of a processing attempt, then every 10 s, stopping
@@ -20,14 +30,17 @@ interface Pollable {
  * to "processing" always gets a fresh window, even if the screen has been
  * open longer than the window (a mount-time anchor would silently never
  * resume polling in that case).
+ *
+ * A list target arms on "any item processing" and disarms once every item has
+ * settled, so a plan generated while the list is open resolves in place.
  */
 export function createPollingWindow() {
   let anchor: number | null = null;
 
   return {
     /** TanStack Query `refetchInterval` value for the given data. */
-    interval(data: Pollable | null | undefined): number | false {
-      if (!data || data.status !== 'processing') {
+    interval(data: PollTarget): number | false {
+      if (!isProcessing(data)) {
         anchor = null;
         return false;
       }
@@ -38,9 +51,9 @@ export function createPollingWindow() {
     },
 
     /** True when the window expired while the resource was still processing. */
-    expired(data: Pollable | null | undefined, isFetching: boolean): boolean {
+    expired(data: PollTarget, isFetching: boolean): boolean {
       return (
-        data?.status === 'processing' &&
+        isProcessing(data) &&
         anchor !== null &&
         Date.now() - anchor > WINDOW_MS &&
         !isFetching

@@ -15,6 +15,7 @@ import { planByReviewOptions, usePlanByReview } from '@/hooks/queries/trainingPl
 import { surfboardsQueryOptions, useSurfboards } from '@/hooks/queries/surfboards';
 import { useDeleteSession } from '@/hooks/mutations/sessions';
 import { useRetryReview } from '@/hooks/mutations/reviews';
+import { useRetryTrainingPlan } from '@/hooks/mutations/trainingPlans';
 import { useDeleteMedia } from '@/hooks/mutations/media';
 import { toUserMessage } from '@/lib/api/errors';
 import { formatLongDate } from '@/utils/dates';
@@ -49,6 +50,17 @@ import {
   IconWave,
 } from '@/components/icons';
 
+/**
+ * Back always lands on the sessions list. History would walk back into the
+ * create flow (new → upload → here), which is a one-way wizard.
+ */
+function SessionHeader() {
+  const navigate = useNavigate();
+  return (
+    <AppHeader onBack={() => void navigate({ to: '/sessions' })} title="Sessão" hideAvatar />
+  );
+}
+
 export const Route = createFileRoute('/_app/sessions/$sessionId/')({
   loader: async ({ context, params }) => {
     const { sessionId } = params;
@@ -64,7 +76,7 @@ export const Route = createFileRoute('/_app/sessions/$sessionId/')({
   },
   pendingComponent: () => (
     <>
-      <AppHeader onBack title="Sessão" hideAvatar />
+      <SessionHeader />
       <SessionDetailSkeleton />
     </>
   ),
@@ -88,7 +100,7 @@ function SessionDetailError({ reset }: ErrorComponentProps) {
 
   return (
     <>
-      <AppHeader onBack title="Sessão" hideAvatar />
+      <SessionHeader />
       <div className="pt-9">
         <ErrorState
           onRetry={() => {
@@ -129,7 +141,7 @@ function HeroCard({
       </div>
       {score != null && (
         <div className="relative mt-4 flex items-baseline gap-3">
-          <div className="font-display text-[64px] font-light leading-none tabular-nums tracking-[-0.05em]">
+          <div className="font-display text-[64px] font-bold leading-none tabular-nums tracking-[-0.05em]">
             {Math.floor(score)}
             <span className="text-primary">.</span>
             {Math.round((score - Math.floor(score)) * 10)}
@@ -237,11 +249,52 @@ function ReviewSummary({
   );
 }
 
-/** Plan summary row — only rendered when a review exists (plan is ensured). */
+/**
+ * Treino section — only rendered when a review exists (plan is ensured). Like
+ * ReviewSummary, every plan status renders inline: a plan mid-generation has
+ * no workouts yet, so counting them would read "0 treinos".
+ */
 function PlanSummary({ reviewId, sessionId }: { reviewId: string; sessionId: string }) {
   const { data: plan } = usePlanByReview(reviewId);
-  const exerciseCount = plan?.workouts.reduce((n, w) => n + w.exercises.length, 0) ?? 0;
+  const { mutate: retry, isPending: isRetrying } = useRetryTrainingPlan();
+
+  if (plan?.status === 'failed') {
+    return (
+      <SummaryRow
+        icon={<IconBarbell size={18} />}
+        title="Treino não concluído"
+        sub={plan.errorMessage ?? 'A IA falhou ao montar o plano.'}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isRetrying}
+            onClick={() =>
+              retry({ planId: plan.id }, { onError: (err) => toast.error(toUserMessage(err)) })
+            }
+          >
+            {isRetrying ? 'Tentando…' : 'Tentar de novo'}
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (plan?.status === 'processing') {
+    return (
+      <SummaryRow
+        icon={<IconBarbell size={18} />}
+        title="Montando seu treino…"
+        sub="A IA está transformando a análise em exercícios."
+        to="/sessions/$sessionId/plan"
+        params={{ sessionId }}
+      />
+    );
+  }
+
   if (plan) {
+    // completed — workouts are only populated on this status.
+    const exerciseCount = plan.workouts.reduce((n, w) => n + w.exercises.length, 0);
     return (
       <SummaryRow
         icon={<IconBarbell size={18} />}
@@ -252,6 +305,7 @@ function PlanSummary({ reviewId, sessionId }: { reviewId: string; sessionId: str
       />
     );
   }
+
   return (
     <SummaryRow
       icon={<IconBarbell size={18} />}
@@ -286,7 +340,7 @@ function SessionDetailScreen() {
 
   return (
     <>
-      <AppHeader onBack title="Sessão" hideAvatar />
+      <SessionHeader />
       <div className="px-5 pt-1">
         <HeroCard session={session} boardLabel={boardLabel} review={review} />
 
