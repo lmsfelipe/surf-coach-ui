@@ -1,4 +1,0 @@
-# SPA fallback: TanStack Router does client-side routing, so every
-# non-asset path must serve index.html (200, not a redirect) or deep
-# links / refreshes 404 on Cloudflare Pages.
-/*    /index.html   200

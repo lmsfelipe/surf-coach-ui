@@ -1,0 +1,13 @@
+{
+  // Cloudflare Workers Static Assets deploy for the Vite SPA.
+  // SPA routing is handled by `not_found_handling` below — do NOT re-add a
+  // `/* /index.html 200` rule in `_redirects`: Workers' html_handling strips
+  // `/index.html` back to `/`, which the catch-all re-matches, and the
+  // deploy-time validator rejects it as an infinite loop.
+  "name": "surf-coach-ui",
+  "compatibility_date": "2026-07-27",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
