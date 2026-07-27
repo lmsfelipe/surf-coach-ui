@@ -40,7 +40,11 @@ export function AppHeader({ title, onBack, action, hideAvatar }: AppHeaderProps)
           <IconChevronLeft size={20} />
         </button>
       ) : (
-        <Wordmark width={100} />
+        <>
+          {/* Desktop shows the logo in the side rail, so the body header hides it. */}
+          <Wordmark width={100} className="md:hidden" />
+          <div className="hidden size-9 shrink-0 md:block" />
+        </>
       )}
 
       {title && (

@@ -168,6 +168,23 @@ h3, .t-h3 {
   line-height: var(--lh-h3);
   color: var(--text);
 }
+/* Sessions greeting: reads as h3 on mobile, promotes to h1 on desktop (≥md). */
+.t-greeting {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
+  color: var(--text);
+}
+@media (min-width: 768px) {
+  .t-greeting {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: var(--fs-h1);
+    line-height: var(--lh-h1);
+    letter-spacing: var(--tr-h1);
+  }
+}
 .t-eyebrow {
   font-family: var(--font-body);
   font-weight: 700;

@@ -1,4 +1,5 @@
 import { DotPulser } from './DotPulser';
+import { PhraseCarousel } from './PhraseCarousel';
 
 interface AIStateProps {
   title?: string;
@@ -14,11 +15,7 @@ export function AIState({ title = 'Analisando sua sessão…', subtitle }: AISta
       </div>
       <div>
         <div className="font-heading text-base font-bold text-foreground">{title}</div>
-        {subtitle && (
-          <div className="mx-auto mt-1.5 max-w-[240px] text-[12.5px] text-muted-foreground">
-            {subtitle}
-          </div>
-        )}
+        <PhraseCarousel lead={subtitle} />
       </div>
     </div>
   );

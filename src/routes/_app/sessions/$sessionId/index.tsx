@@ -20,6 +20,7 @@ import { useDeleteMedia } from '@/hooks/mutations/media';
 import { toUserMessage } from '@/lib/api/errors';
 import { formatLongDate } from '@/utils/dates';
 import { formatWaveSize } from '@/utils/units';
+import { scoreCardBackground } from '@/utils/scoreCardBackground';
 import type { Review, Session, Surfboard } from '@/types/api';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Badge } from '@/components/ui/badge';
@@ -132,16 +133,29 @@ function HeroCard({
   review: Review | null;
 }) {
   const score = review?.overallScore ?? null;
+  const backdrop = scoreCardBackground(session.id);
   return (
     <div className="relative overflow-hidden rounded-[18px] border border-border bg-[linear-gradient(160deg,#1A2236_0%,#141B2E_60%,#0B1020_100%)] p-[20px_22px] text-white shadow-[var(--shadow-md)]">
-      <div className="pointer-events-none absolute -right-[60px] -top-[60px] size-[220px] rounded-full bg-[radial-gradient(circle,rgba(61,91,255,0.45)_0%,rgba(61,91,255,0)_65%)] blur-lg" />
+      {backdrop && (
+        <>
+          <img
+            src={backdrop}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute inset-0 size-full object-cover"
+          />
+          {/* Darken the text side (left) and the chip row (bottom) for legibility. */}
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(105deg,rgba(8,12,24,0.92)_0%,rgba(8,12,24,0.55)_46%,rgba(8,12,24,0.2)_100%)]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-[linear-gradient(to_top,rgba(8,12,24,0.85)_0%,rgba(8,12,24,0)_100%)]" />
+        </>
+      )}
       <div className="relative">
         <div className="text-[13.5px] font-semibold text-white/90">{session.location}</div>
         <div className="text-[11px] text-white/55">{formatLongDate(session.sessionDate)}</div>
       </div>
       {score != null && (
         <div className="relative mt-4 flex items-baseline gap-3">
-          <div className="font-display text-[64px] font-bold leading-none tabular-nums tracking-[-0.05em]">
+          <div className="font-heading text-[64px] font-bold leading-none tabular-nums tracking-[-0.05em]">
             {Math.floor(score)}
             <span className="text-primary">.</span>
             {Math.round((score - Math.floor(score)) * 10)}

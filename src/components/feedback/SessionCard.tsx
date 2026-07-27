@@ -36,7 +36,7 @@ export function SessionCard({ session, boardLabel, score }: SessionCardProps) {
             <ScoreChipSkeleton />
           ) : score != null ? (
             <span
-              className="font-display text-[32px] font-bold leading-none tabular-nums tracking-[-0.045em]"
+              className="font-heading text-[32px] font-bold leading-none tabular-nums tracking-[-0.045em]"
               style={{ color: scoreColor(score) }}
             >
               {score.toFixed(1)}

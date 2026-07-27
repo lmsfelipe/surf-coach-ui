@@ -28,7 +28,7 @@ export function ScoreBars({ review }: ScoreBarsProps) {
             <div className="mb-2 flex items-baseline justify-between">
               <span className="text-xs font-semibold text-muted-foreground">{r.label}</span>
               <span
-                className="font-display text-[18px] font-medium tabular-nums tracking-[-0.025em]"
+                className="font-heading text-[18px] font-medium tabular-nums tracking-[-0.025em]"
                 style={{ color }}
               >
                 {r.value.toFixed(1)}
