@@ -50,7 +50,7 @@ const sessions: Session[] = [
 
 /** Per-test overrides for media upload error scenarios. Use with server.use(...). */
 export const mediaUploadHandlers = {
-  notSurfRelated: http.post(`${API}/api/v1/sessions/:sessionId/media`, () =>
+  notSurfRelated: http.post(`${API}/api/v1/sessions/:sessionId/media/`, () =>
     HttpResponse.json(
       envelope('MEDIA_NOT_SURF_RELATED', 'Uploaded media does not appear to be surf or water sports related.', {
         reason: 'Shows a soccer game.',
@@ -58,7 +58,7 @@ export const mediaUploadHandlers = {
       { status: 422 },
     ),
   ),
-  explicitContent: http.post(`${API}/api/v1/sessions/:sessionId/media`, () =>
+  explicitContent: http.post(`${API}/api/v1/sessions/:sessionId/media/`, () =>
     HttpResponse.json(
       envelope('EXPLICIT_CONTENT', 'Uploaded media contains explicit or offensive content.', {
         reason: 'Contains nudity.',
@@ -71,8 +71,8 @@ export const mediaUploadHandlers = {
 /** Default happy-path handlers. Override per-test with server.use(...). */
 export const handlers = [
   http.get(`${API}/me`, () => HttpResponse.json(profile)),
-  http.get(`${API}/api/v1/surfboards`, () => HttpResponse.json(surfboards)),
-  http.get(`${API}/api/v1/sessions`, () => HttpResponse.json(sessions)),
+  http.get(`${API}/api/v1/surfboards/`, () => HttpResponse.json(surfboards)),
+  http.get(`${API}/api/v1/sessions/`, () => HttpResponse.json(sessions)),
   http.get(`${API}/api/v1/sessions/:id/review`, () =>
     HttpResponse.json(envelope('REVIEW_NOT_FOUND', 'Review not found.'), { status: 404 }),
   ),

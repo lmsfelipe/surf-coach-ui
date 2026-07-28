@@ -45,7 +45,7 @@ function xhrUpload(
     const form = new FormData();
     for (const file of files) form.append('file', file);
 
-    xhr.open('POST', `${env.apiBaseUrl}/api/v1/sessions/${sessionId}/media`);
+    xhr.open('POST', `${env.apiBaseUrl}/api/v1/sessions/${sessionId}/media/`);
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
     xhr.upload.onprogress = (e) => {
