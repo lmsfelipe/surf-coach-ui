@@ -11,6 +11,7 @@ import { AIState } from '@/components/feedback/AIState';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { WorkoutAccordion } from '@/components/feedback/WorkoutAccordion';
+import { TrainingDisclaimer } from '@/components/feedback/TrainingDisclaimer';
 import { Alert } from '@/components/feedback/Alert';
 import { IconSparkle } from '@/components/icons';
 
@@ -215,6 +216,7 @@ function PlanContent({ reviewId, header }: { reviewId: string; header: React.Rea
         <p className="mb-[18px] text-[12.5px] leading-[18px] text-muted-foreground">
           {workouts.length} treinos · {exerciseCount} exercícios
         </p>
+        <TrainingDisclaimer className="mb-[18px]" />
         <div className="flex flex-col gap-3">
           {workouts.map((w, i) => (
             <WorkoutAccordion key={w.id} workout={w} defaultOpen={i === 0} />

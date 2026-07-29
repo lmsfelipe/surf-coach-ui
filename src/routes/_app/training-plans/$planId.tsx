@@ -1,14 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { planQueryOptions, usePlan } from '@/hooks/queries/trainingPlans';
-import { useRetryTrainingPlan } from '@/hooks/mutations/trainingPlans';
-import { AppHeader } from '@/components/layout/AppHeader';
-import { AIState } from '@/components/feedback/AIState';
-import { Alert } from '@/components/feedback/Alert';
-import { ErrorState } from '@/components/feedback/ErrorState';
-import { WorkoutAccordion } from '@/components/feedback/WorkoutAccordion';
-import { PlanSkeleton } from '@/components/skeletons';
+import { createFileRoute } from "@tanstack/react-router";
+import { planQueryOptions, usePlan } from "@/hooks/queries/trainingPlans";
+import { useRetryTrainingPlan } from "@/hooks/mutations/trainingPlans";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { AIState } from "@/components/feedback/AIState";
+import { Alert } from "@/components/feedback/Alert";
+import { ErrorState } from "@/components/feedback/ErrorState";
+import { WorkoutAccordion } from "@/components/feedback/WorkoutAccordion";
+import { TrainingDisclaimer } from "@/components/feedback/TrainingDisclaimer";
+import { PlanSkeleton } from "@/components/skeletons";
 
-export const Route = createFileRoute('/_app/training-plans/$planId')({
+export const Route = createFileRoute("/_app/training-plans/$planId")({
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(planQueryOptions(params.planId)),
   pendingComponent: () => (
@@ -33,7 +34,7 @@ function PlanDetailScreen() {
   const { data: plan, timedOut } = usePlan(planId);
   const { mutate: retryPlan, isPending: isRetrying } = useRetryTrainingPlan();
 
-  if (plan.status === 'processing') {
+  if (plan.status === "processing") {
     return (
       <>
         <AppHeader onBack title="Treino" hideAvatar />
@@ -45,7 +46,8 @@ function PlanDetailScreen() {
           {timedOut && (
             <div className="px-5 pt-4">
               <Alert tone="warning">
-                O treino está demorando mais que o esperado. Tente recarregar a página em alguns instantes.
+                O treino está demorando mais que o esperado. Tente recarregar a
+                página em alguns instantes.
               </Alert>
             </div>
           )}
@@ -54,22 +56,26 @@ function PlanDetailScreen() {
     );
   }
 
-  if (plan.status === 'failed') {
+  if (plan.status === "failed") {
     return (
       <>
         <AppHeader onBack title="Treino" hideAvatar />
         <div className="pt-9">
           <ErrorState
             title="Treino não concluído"
-            subtitle={plan.errorMessage ?? 'Não foi possível gerar o plano.'}
-            onRetry={isRetrying ? undefined : () => retryPlan({ planId: plan.id })}
+            subtitle={plan.errorMessage ?? "Não foi possível gerar o plano."}
+            onRetry={
+              isRetrying ? undefined : () => retryPlan({ planId: plan.id })
+            }
           />
         </div>
       </>
     );
   }
 
-  const workouts = [...plan.workouts].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
+  const workouts = [...plan.workouts].sort(
+    (a, b) => a.sequenceNumber - b.sequenceNumber
+  );
   const exerciseCount = workouts.reduce((n, w) => n + w.exercises.length, 0);
 
   return (
@@ -77,11 +83,12 @@ function PlanDetailScreen() {
       <AppHeader onBack title="Treino" hideAvatar />
       <div className="px-5 pb-6 pt-1">
         <h1 className="mb-1 font-heading text-[23px] font-extrabold tracking-[-0.025em] text-foreground">
-          {workouts[0]?.focusArea ?? 'Plano de treino'}
+          {workouts[0]?.focusArea ?? "Plano de treino"}
         </h1>
         <p className="mb-[18px] text-[12.5px] text-muted-foreground">
           {workouts.length} treinos · {exerciseCount} exercícios
         </p>
+        <TrainingDisclaimer className="mb-[18px]" />
         <div className="flex flex-col gap-3">
           {workouts.map((w, i) => (
             <WorkoutAccordion key={w.id} workout={w} defaultOpen={i === 0} />
