@@ -17,10 +17,17 @@ import { WaveSlider } from '@/components/forms/WaveSlider';
 import { SelectField } from '@/components/forms/SelectField';
 import { TextareaField } from '@/components/forms/TextareaField';
 import { DotPulser } from '@/components/feedback/DotPulser';
+import { FormSkeleton } from '@/components/skeletons';
 import { IconPin } from '@/components/icons';
 
 export const Route = createFileRoute('/_app/sessions/new')({
   loader: ({ context }) => context.queryClient.ensureQueryData(surfboardsQueryOptions()),
+  pendingComponent: () => (
+    <>
+      <AppHeader onBack hideAvatar />
+      <FormSkeleton />
+    </>
+  ),
   component: NewSessionScreen,
 });
 

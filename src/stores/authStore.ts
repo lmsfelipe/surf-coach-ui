@@ -46,9 +46,16 @@ export function getAccessToken(): string | null {
  * Call once at app bootstrap (main.tsx) before rendering the router.
  */
 export async function initAuth(): Promise<void> {
-  const { data } = await supabase.auth.getSession();
-  useAuthStore.getState().setSession(data.session);
-  useAuthStore.getState().setInitialized(true);
+  try {
+    const { data } = await supabase.auth.getSession();
+    useAuthStore.getState().setSession(data.session);
+  } catch (error) {
+    // A failed session read must never trap the app on the boot splash — fall
+    // through as signed-out and let the guards route to /login.
+    Sentry.captureException(error);
+  } finally {
+    useAuthStore.getState().setInitialized(true);
+  }
 
   supabase.auth.onAuthStateChange((_event, session) => {
     useAuthStore.getState().setSession(session);

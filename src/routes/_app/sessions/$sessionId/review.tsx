@@ -27,6 +27,7 @@ import { Disclaimer } from "@/components/feedback/TrainingDisclaimer";
 import { Link } from "@tanstack/react-router";
 import { IconBarbell, IconImage } from "@/components/icons";
 import { Alert } from "@/components/feedback/Alert";
+import { ScorePanelSkeleton } from "@/components/skeletons";
 
 export const Route = createFileRoute("/_app/sessions/$sessionId/review")({
   loader: async ({ context, params }) => {
@@ -37,6 +38,12 @@ export const Route = createFileRoute("/_app/sessions/$sessionId/review")({
       await context.queryClient.ensureQueryData(planByReviewOptions(review.id));
     }
   },
+  pendingComponent: () => (
+    <>
+      <AppHeader onBack title="Análise" hideAvatar />
+      <ScorePanelSkeleton />
+    </>
+  ),
   component: ReviewScreen,
 });
 

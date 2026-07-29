@@ -40,7 +40,7 @@ export function BoardCard({ board, onEdit, onDelete }: BoardCardProps) {
           </button>
         </div>
       </div>
-      <div className="text-[15px] font-semibold text-foreground">
+      <div className="break-words text-[15px] font-semibold text-foreground">
         {board.label || boardTypeLabel(board.boardType)}
       </div>
       <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">

@@ -127,7 +127,7 @@ function SessionsScreen() {
           <div className="px-5 pt-1">
             <Eyebrow className="!mb-0">Suas sessões · {sessions.length}</Eyebrow>
           </div>
-          <div className="flex flex-col gap-3 px-5 pt-3.5 lg:grid lg:grid-cols-2">
+          <div className="flex max-w-[100vw] flex-col gap-3 px-5 pt-3.5 lg:grid lg:grid-cols-2">
             {sessions.map((session) => (
               <SessionCardWithScore
                 key={session.id}

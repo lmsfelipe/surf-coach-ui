@@ -46,12 +46,12 @@ export function SessionCard({ session, boardLabel, score }: SessionCardProps) {
               Sem análise
             </Badge>
           )}
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-muted-foreground">
             <IconWave size={17} />
             <span className="text-xs font-medium">{formatWaveSize(session.waveSize)}</span>
           </div>
           <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
-            <IconBoard size={17} />
+            <IconBoard size={17} className="shrink-0" />
             <span className="truncate text-xs font-medium">{boardLabel || '—'}</span>
           </div>
         </div>

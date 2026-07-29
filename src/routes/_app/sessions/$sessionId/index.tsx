@@ -164,11 +164,12 @@ function HeroCard({
         </div>
       )}
       <div className="relative mt-4 flex flex-wrap gap-2">
-        <Badge tone="muted">
+        <Badge tone="muted" className="shrink-0">
           <IconWave size={12} /> {formatWaveSize(session.waveSize)}
         </Badge>
-        <Badge tone="muted">
-          <IconBoard size={12} /> {boardLabel || '—'}
+        <Badge tone="muted" className="min-w-0 max-w-full">
+          <IconBoard size={12} />
+          <span className="truncate">{boardLabel || '—'}</span>
         </Badge>
       </div>
     </div>

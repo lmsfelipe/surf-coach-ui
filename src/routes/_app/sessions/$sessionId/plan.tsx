@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/feedback/EmptyState';
 import { WorkoutAccordion } from '@/components/feedback/WorkoutAccordion';
 import { TrainingDisclaimer } from '@/components/feedback/TrainingDisclaimer';
 import { Alert } from '@/components/feedback/Alert';
+import { PlanSkeleton } from '@/components/skeletons';
 import { IconSparkle } from '@/components/icons';
 
 export const Route = createFileRoute('/_app/sessions/$sessionId/plan')({
@@ -24,6 +25,12 @@ export const Route = createFileRoute('/_app/sessions/$sessionId/plan')({
       await context.queryClient.ensureQueryData(planByReviewOptions(review.id));
     }
   },
+  pendingComponent: () => (
+    <>
+      <AppHeader onBack title="Treino" hideAvatar />
+      <PlanSkeleton />
+    </>
+  ),
   component: PlanScreen,
 });
 

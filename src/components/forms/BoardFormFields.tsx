@@ -1,4 +1,4 @@
-import { BOARD_TYPE_OPTIONS } from '@/config/constants';
+import { BOARD_LABEL_MAX, BOARD_TYPE_OPTIONS } from '@/config/constants';
 import { Card } from '@/components/ui/card';
 import { SelectField } from './SelectField';
 import { NumberField } from './NumberField';
@@ -28,7 +28,13 @@ export function BoardFormFields() {
           <NumberField name="volume" label="Volume (L)" optional suffix="L" step={0.5} />
         </div>
       </div>
-      <TextField name="label" label="Apelido" optional placeholder="Ex.: Pranchinha" />
+      <TextField
+        name="label"
+        label="Apelido"
+        optional
+        placeholder="Ex.: Pranchinha"
+        maxLength={BOARD_LABEL_MAX}
+      />
     </Card>
   );
 }

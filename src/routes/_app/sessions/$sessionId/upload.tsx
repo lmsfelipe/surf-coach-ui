@@ -16,11 +16,18 @@ import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/feedback/Eyebrow';
 import { MediaThumb } from '@/components/feedback/MediaThumb';
 import { DotPulser } from '@/components/feedback/DotPulser';
+import { MediaGridSkeleton } from '@/components/skeletons';
 import { IconAlertCircle, IconImage, IconUpload, IconVideo, IconX } from '@/components/icons';
 
 export const Route = createFileRoute('/_app/sessions/$sessionId/upload')({
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(mediaQueryOptions(params.sessionId)),
+  pendingComponent: () => (
+    <>
+      <AppHeader onBack title="Adicionar mídia" hideAvatar />
+      <MediaGridSkeleton />
+    </>
+  ),
   component: UploadScreen,
 });
 

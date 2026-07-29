@@ -83,6 +83,12 @@ export const NAME_MAX = 200;
 export const LOCATION_MAX = 200;
 export const NOTES_MAX = 1000;
 export const LABEL_MAX = 200;
+/**
+ * UX cap for the board nickname input — deliberately shorter than the server's
+ * LABEL_MAX so long names can't blow out card/badge layouts. Display surfaces
+ * still truncate as a backstop for any legacy label above this length.
+ */
+export const BOARD_LABEL_MAX = 20;
 
 // ---- Units (StyleGuide §8) ---------------------------------------------
 export const WAVE_SIZE_METERS = { min: 0, max: 4, step: 0.1 } as const;

@@ -88,4 +88,36 @@ export function PlanSkeleton() {
   );
 }
 
+/** Media upload — dropzone placeholder above a thumbnail grid. */
+export function MediaGridSkeleton() {
+  return (
+    <div className="px-5 pt-1.5">
+      <Skel className="mb-[22px] h-[132px] rounded-[18px]" />
+      <Skel className="mb-3 h-2.5 w-[30%]" />
+      <div className="grid grid-cols-3 gap-2">
+        {[0, 1, 2].map((i) => (
+          <Skel key={i} className="aspect-square rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Generic form — a card of labelled field rows above a submit button. */
+export function FormSkeleton() {
+  return (
+    <div className="px-5 pt-4">
+      <div className="flex flex-col gap-4 rounded-[18px] bg-card p-4 shadow-[var(--shadow-sm)]">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i}>
+            <Skel className="mb-2 h-2.5 w-24" />
+            <Skel className="h-11 rounded-xl" />
+          </div>
+        ))}
+      </div>
+      <Skel className="mt-5 h-12 rounded-xl" />
+    </div>
+  );
+}
+
 export { Skel, SkelCard };
