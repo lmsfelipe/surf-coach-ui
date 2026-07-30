@@ -33,13 +33,60 @@ export function classifyMedia(file: File): MediaType | null {
 }
 
 /**
- * Selection rule: exactly one video, OR up to MAX_IMAGES_PER_SESSION images —
- * never a mix. Returns a form-level error message, or null when the set is valid.
+ * Resolve a single OS-dialog batch to one media kind (video wins): a batch
+ * mixing a video with images keeps just the first video; otherwise everything
+ * else is kept (images + any stray type, so invalid files still surface their
+ * per-file error). Used to enforce the single-picker auto-replace behavior.
  */
-export function validateSelectionRule(files: File[]): string | null {
-  if (files.length === 0) return null;
+export function resolveMediaBatch(picked: File[]): File[] {
+  const firstVideo = picked.find((f) => classifyMedia(f) === 'video');
+  if (firstVideo) return [firstVideo];
+  return picked;
+}
+
+/** Context describing media already attached to the session. */
+export interface ExistingMedia {
+  /** Type of media already on the session, or null when none is attached. */
+  type: MediaType | null;
+  /** Count of images already attached (0 when the existing media is a video). */
+  imageCount: number;
+}
+
+const NO_EXISTING_MEDIA: ExistingMedia = { type: null, imageCount: 0 };
+
+/**
+ * Selection rule: exactly one video, OR up to MAX_IMAGES_PER_SESSION images —
+ * never a mix. When the session already has media, the pending selection is
+ * validated against it (combined set: attached + pending). Returns a form-level
+ * error message, or null when the set is valid.
+ */
+export function validateSelectionRule(
+  files: File[],
+  existing: ExistingMedia = NO_EXISTING_MEDIA,
+): string | null {
   const videos = files.filter((f) => classifyMedia(f) === 'video');
   const images = files.filter((f) => classifyMedia(f) === 'image');
+
+  // A session with an existing video is complete/locked — no more media.
+  if (existing.type === 'video') {
+    if (files.length > 0) {
+      return 'Esta sessão já tem um vídeo — remova-o para trocar a mídia.';
+    }
+    return null;
+  }
+
+  // A session with existing images accepts only more images, up to the cap.
+  if (existing.type === 'image') {
+    if (videos.length > 0) {
+      return 'Esta sessão já tem fotos — remova-as para enviar um vídeo.';
+    }
+    if (existing.imageCount + images.length > MAX_IMAGES_PER_SESSION) {
+      return `Máximo de ${MAX_IMAGES_PER_SESSION} fotos por sessão.`;
+    }
+    return null;
+  }
+
+  if (files.length === 0) return null;
 
   if (videos.length > 0 && images.length > 0) {
     return 'Escolha 1 vídeo ou até 3 fotos — não os dois.';
@@ -94,10 +141,15 @@ export interface MediaValidationResult {
 
 /**
  * Full validation: selection rule + per-file type/size + video duration.
+ * When `existing` is passed, the pending selection is validated against media
+ * already attached to the session (never a video+image mix, never >3 images).
  */
-export async function validateMediaFiles(files: File[]): Promise<MediaValidationResult> {
+export async function validateMediaFiles(
+  files: File[],
+  existing: ExistingMedia = NO_EXISTING_MEDIA,
+): Promise<MediaValidationResult> {
   const fileErrors = new Map<File, FileError>();
-  const selectionError = validateSelectionRule(files);
+  const selectionError = validateSelectionRule(files, existing);
 
   for (const file of files) {
     const syncError = validateFileSync(file);

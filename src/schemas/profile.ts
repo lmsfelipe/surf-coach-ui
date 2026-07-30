@@ -22,12 +22,14 @@ export const nameSchema = z
   .min(1, 'Informe seu nome')
   .max(NAME_MAX, `Máximo ${NAME_MAX} caracteres`);
 
+export const birthdaySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida');
+
 /** Profile edit form — all fields optional (mirrors PATCH /me). */
 export const profileFormSchema = z.object({
   name: nameSchema.optional(),
   surfLevel: surfLevelSchema.optional(),
   gender: genderSchema.optional(),
-  birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida').optional(),
+  birthday: birthdaySchema.optional(),
   heightCm: heightCmSchema.optional(),
   weightKg: weightKgSchema.optional(),
 });
@@ -35,9 +37,11 @@ export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 /** Onboarding — surfLevel + height + weight are required (Overview §6, decision #9). */
 export const onboardingSchema = z.object({
+  name: nameSchema,
   surfLevel: surfLevelSchema,
   heightCm: heightCmSchema,
   weightKg: weightKgSchema,
   gender: genderSchema.optional(),
+  birthday: birthdaySchema.optional(),
 });
 export type OnboardingValues = z.infer<typeof onboardingSchema>;

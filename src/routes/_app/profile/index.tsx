@@ -1,16 +1,19 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { SURF_LEVEL_OPTIONS } from '@/config/constants';
 import { profileQueryOptions, useProfile } from '@/hooks/queries/profile';
+import { useAuthStore } from '@/stores/authStore';
 import { initialsFor } from '@/components/layout/ProfileAvatar';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { ProfileHeaderSkeleton } from '@/components/skeletons';
 import {
   IconBoard,
   IconChevronRight,
+  IconLogout,
   IconPencil,
   IconSettings,
   IconSparkle,
@@ -62,23 +65,19 @@ function MenuRow({
 }
 
 function ProfileScreen() {
+  const navigate = useNavigate();
   const { data: profile } = useProfile();
+  const signOut = useAuthStore((s) => s.signOut);
   const levelLabel = SURF_LEVEL_OPTIONS.find((o) => o.value === profile.surfLevel)?.label;
+
+  async function handleLogout() {
+    await signOut();
+    await navigate({ to: '/login' });
+  }
 
   return (
     <>
-      <AppHeader
-        hideAvatar
-        action={
-          <Link
-            to="/settings"
-            aria-label="Configurações"
-            className="flex size-9 items-center justify-center rounded-full bg-secondary text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <IconSettings size={18} />
-          </Link>
-        }
-      />
+      <AppHeader hideAvatar />
       <div className="px-5 pt-1.5">
         <div className="mb-[26px] flex flex-col items-center text-center">
           <Avatar className="size-[76px]">
@@ -114,8 +113,18 @@ function ProfileScreen() {
         <Card className="p-[6px_0]">
           <MenuRow icon={<IconBoard size={19} />} label="Minhas pranchas" to="/boards" />
           <MenuRow icon={<IconPencil size={18} />} label="Editar perfil" to="/profile/edit" />
-          <MenuRow icon={<IconSettings size={18} />} label="Configurações" to="/settings" last />
+          <MenuRow icon={<IconSettings size={18} />} label="Conta" to="/settings" last />
         </Card>
+        <div className="mt-5">
+          <Button
+            variant="ghost"
+            className="w-full bg-danger/[0.12] text-danger hover:bg-danger/20"
+            onClick={handleLogout}
+          >
+            <IconLogout size={17} />
+            Sair
+          </Button>
+        </div>
       </div>
     </>
   );

@@ -9,6 +9,7 @@ import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/forms/TextField';
+import { PasswordField } from '@/components/forms/PasswordField';
 import { Alert } from '@/components/feedback/Alert';
 import { DotPulser } from '@/components/feedback/DotPulser';
 import { IconLock, IconMail } from '@/components/icons';
@@ -41,16 +42,7 @@ function LoginScreen() {
   }
 
   return (
-    <AuthShell
-      foot={
-        <>
-          Não tem conta?{' '}
-          <Link to="/signup" className="font-semibold text-primary">
-            Criar conta
-          </Link>
-        </>
-      }
-    >
+    <AuthShell>
       <AuthHeading>Entrar</AuthHeading>
       {authError && (
         <div className="mb-4">
@@ -66,10 +58,9 @@ function LoginScreen() {
             autoComplete="email"
             icon={<IconMail size={17} />}
           />
-          <TextField
+          <PasswordField
             name="password"
             label="Senha"
-            type="password"
             autoComplete="current-password"
             icon={<IconLock size={17} />}
           />
@@ -81,6 +72,12 @@ function LoginScreen() {
           <Button type="submit" size="lg" className="w-full" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? <DotPulser /> : 'Entrar'}
           </Button>
+          <p className="mt-4 text-center text-[15px] text-muted-foreground">
+            Não tem conta?{' '}
+            <Link to="/signup" className="font-semibold text-primary">
+              Criar conta
+            </Link>
+          </p>
         </form>
       </Form>
     </AuthShell>

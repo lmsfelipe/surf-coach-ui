@@ -161,7 +161,7 @@ function ReviewScreen() {
         <div className="pt-[30px]">
           <AIState
             title="Analisando sua sessão…"
-            subtitle="A IA está assistindo seus take-offs. Leva menos de 30s."
+            subtitle="A IA está assistindo sua sessão. Leva menos de 30s."
           />
         </div>
       </>
@@ -176,7 +176,7 @@ function ReviewScreen() {
         <div className="pt-[30px]">
           <AIState
             title="Analisando sua sessão…"
-            subtitle="A IA está assistindo seus take-offs. Leva menos de 30s."
+            subtitle="A IA está assistindo sua sessão. Leva menos de 30s."
           />
           {timedOut && (
             <div className="px-5 pt-4">

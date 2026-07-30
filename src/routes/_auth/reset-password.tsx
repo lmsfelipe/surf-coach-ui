@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { TextField } from '@/components/forms/TextField';
+import { PasswordField } from '@/components/forms/PasswordField';
 import { Alert } from '@/components/feedback/Alert';
 import { DotPulser } from '@/components/feedback/DotPulser';
 import { IconLock } from '@/components/icons';
@@ -46,17 +46,15 @@ function ResetPasswordScreen() {
       )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <TextField
+          <PasswordField
             name="password"
             label="Nova senha"
-            type="password"
             autoComplete="new-password"
             icon={<IconLock size={17} />}
           />
-          <TextField
+          <PasswordField
             name="confirmPassword"
             label="Confirmar senha"
-            type="password"
             autoComplete="new-password"
             icon={<IconLock size={17} />}
           />

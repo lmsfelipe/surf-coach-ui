@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { TextField } from '@/components/forms/TextField';
+import { PasswordField } from '@/components/forms/PasswordField';
 import { Alert } from '@/components/feedback/Alert';
 import { DotPulser } from '@/components/feedback/DotPulser';
 import { IconLock } from '@/components/icons';
@@ -48,17 +48,15 @@ function ChangePasswordScreen() {
         )}
         <Form {...form}>
           <form id="change-pw-form" onSubmit={form.handleSubmit(onSubmit)}>
-            <TextField
+            <PasswordField
               name="password"
               label="Nova senha"
-              type="password"
               autoComplete="new-password"
               icon={<IconLock size={17} />}
             />
-            <TextField
+            <PasswordField
               name="confirmPassword"
               label="Confirmar nova senha"
-              type="password"
               autoComplete="new-password"
               icon={<IconLock size={17} />}
             />

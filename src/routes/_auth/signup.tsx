@@ -8,6 +8,7 @@ import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/forms/TextField';
+import { PasswordField } from '@/components/forms/PasswordField';
 import { Alert } from '@/components/feedback/Alert';
 import { DotPulser } from '@/components/feedback/DotPulser';
 import { IconCheckCircle, IconLock, IconMail } from '@/components/icons';
@@ -103,10 +104,9 @@ function SignupScreen() {
             autoComplete="email"
             icon={<IconMail size={17} />}
           />
-          <TextField
+          <PasswordField
             name="password"
             label="Senha"
-            type="password"
             autoComplete="new-password"
             icon={<IconLock size={17} />}
           />

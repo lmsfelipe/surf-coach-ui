@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { BOARD_TYPE_OPTIONS } from '@/config/constants';
 import { sessionFormSchema, type SessionFormValues } from '@/schemas/session';
@@ -81,7 +81,7 @@ function NewSessionScreen() {
               <div className="mb-4">
                 <WaveSlider name="waveSizeMeters" label="Tamanho da onda" />
               </div>
-              {boardOptions.length > 0 && (
+              {boardOptions.length > 0 ? (
                 <SelectField
                   name="surfboardId"
                   label="Prancha usada"
@@ -89,6 +89,15 @@ function NewSessionScreen() {
                   options={boardOptions}
                   placeholder="Selecione"
                 />
+              ) : (
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-secondary p-[12px_14px]">
+                  <span className="text-[12.5px] text-muted-foreground">
+                    Você ainda não cadastrou uma prancha
+                  </span>
+                  <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <Link to="/boards/new">Cadastrar prancha</Link>
+                  </Button>
+                </div>
               )}
               <TextareaField
                 name="notes"

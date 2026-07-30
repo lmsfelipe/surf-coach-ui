@@ -18,6 +18,43 @@ describe('surfboardFormSchema', () => {
     const r = surfboardFormSchema.safeParse({ boardType: 'longboard', boardSize: 0 });
     expect(r.success).toBe(false);
   });
+
+  it('rejects a size below the minimum (3 ft)', () => {
+    const r = surfboardFormSchema.safeParse({ boardType: 'shortboard', boardSize: 2 });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a size above the maximum (15 ft)', () => {
+    const r = surfboardFormSchema.safeParse({ boardType: 'longboard', boardSize: 20 });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a volume below the minimum (5 L)', () => {
+    const r = surfboardFormSchema.safeParse({
+      boardType: 'shortboard',
+      boardSize: 6.2,
+      volume: 2,
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a volume above the maximum (200 L)', () => {
+    const r = surfboardFormSchema.safeParse({
+      boardType: 'longboard',
+      boardSize: 9,
+      volume: 300,
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it('accepts an in-range volume', () => {
+    const r = surfboardFormSchema.safeParse({
+      boardType: 'shortboard',
+      boardSize: 6.2,
+      volume: 32,
+    });
+    expect(r.success).toBe(true);
+  });
 });
 
 describe('sessionFormSchema', () => {
@@ -50,16 +87,37 @@ describe('sessionFormSchema', () => {
 });
 
 describe('onboardingSchema', () => {
-  it('requires surfLevel, height and weight', () => {
+  it('requires name, surfLevel, height and weight', () => {
     expect(onboardingSchema.safeParse({}).success).toBe(false);
+    // missing name is rejected
     expect(
       onboardingSchema.safeParse({ surfLevel: 'intermediate', heightCm: 180, weightKg: 75 })
         .success,
+    ).toBe(false);
+    expect(
+      onboardingSchema.safeParse({
+        name: 'Kelly',
+        surfLevel: 'intermediate',
+        heightCm: 180,
+        weightKg: 75,
+      }).success,
     ).toBe(true);
+  });
+
+  it('accepts an optional birthday', () => {
+    const r = onboardingSchema.safeParse({
+      name: 'Kelly',
+      surfLevel: 'intermediate',
+      heightCm: 180,
+      weightKg: 75,
+      birthday: '1990-02-11',
+    });
+    expect(r.success).toBe(true);
   });
 
   it('enforces height bounds', () => {
     const r = onboardingSchema.safeParse({
+      name: 'Kelly',
       surfLevel: 'beginner',
       heightCm: 90,
       weightKg: 75,
