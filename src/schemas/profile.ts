@@ -37,7 +37,6 @@ export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 /** Onboarding — surfLevel + height + weight are required (Overview §6, decision #9). */
 export const onboardingSchema = z.object({
-  name: nameSchema,
   surfLevel: surfLevelSchema,
   heightCm: heightCmSchema,
   weightKg: weightKgSchema,

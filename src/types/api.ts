@@ -59,6 +59,24 @@ export interface Media {
   createdAt: ISODateTime;
 }
 
+/**
+ * A single file that stored-stage failed within an otherwise-valid batch
+ * (SPEC_BACKEND_Media_Upload_Optimization §11.2). Only ever appears in a
+ * `207 Multi-Status` upload response.
+ */
+export interface FailedUpload {
+  fileName: string;
+  code: 'STORAGE_UPLOAD_FAILED'; // the only per-file code today
+  message: string; // English; never surfaced — use pt-BR copy from errors.ts
+  details: Record<string, unknown> | null;
+}
+
+/** Body of a `207 Multi-Status` upload (some files stored, some failed storage). */
+export interface BatchUploadResult {
+  succeeded: Media[];
+  failed: FailedUpload[];
+}
+
 export type ReviewStatus = 'processing' | 'completed' | 'failed';
 export type PlanStatus = 'processing' | 'completed' | 'failed';
 

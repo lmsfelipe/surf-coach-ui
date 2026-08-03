@@ -21,7 +21,7 @@ export function MediaThumb({ media, progress, dashed, label, onDelete, onClick }
       <button
         type="button"
         onClick={onClick}
-        className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-border bg-secondary text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-border bg-secondary text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <IconPlus size={20} />
         <span className="text-[10px] font-semibold">{label || 'Adicionar'}</span>
@@ -36,7 +36,7 @@ export function MediaThumb({ media, progress, dashed, label, onDelete, onClick }
       <button
         type="button"
         onClick={onClick}
-        className="absolute inset-0 size-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        className="absolute inset-0 size-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
         aria-label={isVideo ? 'Ver vídeo' : 'Ver foto'}
       >
         {media && !isVideo && (
@@ -72,7 +72,7 @@ export function MediaThumb({ media, progress, dashed, label, onDelete, onClick }
           type="button"
           onClick={onDelete}
           aria-label="Remover mídia"
-          className="absolute right-1.5 top-1.5 flex size-[22px] items-center justify-center rounded-full bg-black/55 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute right-1.5 top-1.5 flex size-[22px] cursor-pointer items-center justify-center rounded-full bg-black/55 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <IconX size={13} />
         </button>

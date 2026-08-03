@@ -3,6 +3,7 @@
  * these exist for fast client-side feedback and pt-BR option labels.
  * Source: SPEC_FRONTEND_Overview.md §7/§8 + FRONTEND_INTEGRATION.md.
  */
+import { env } from './env';
 
 // ---- Media upload rules -------------------------------------------------
 export const ACCEPTED_IMAGE_TYPES = [
@@ -25,8 +26,10 @@ export const MEDIA_ACCEPT_ATTR = ACCEPTED_MEDIA_TYPES.join(",");
 
 export const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
 export const MAX_VIDEO_DURATION_SECONDS = 120;
-export const MIN_IMAGES_PER_SESSION = 3; // photos require exactly 3
-export const MAX_IMAGES_PER_SESSION = 3; // 1 video OR exactly 3 images
+// Photo count per session — configurable via VITE_MIN/MAX_IMAGES_PER_SESSION
+// so ops can raise/lower the cap without a code change (must match the API).
+export const MIN_IMAGES_PER_SESSION = env.minImagesPerSession;
+export const MAX_IMAGES_PER_SESSION = env.maxImagesPerSession; // 1 video OR up to N images
 
 // ---- Enums + pt-BR option lists ----------------------------------------
 export const SURF_LEVELS = [

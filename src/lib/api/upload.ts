@@ -2,7 +2,7 @@ import { env } from '@/config/env';
 import { supabase } from '@/lib/supabase';
 import { getAccessToken, useAuthStore } from '@/stores/authStore';
 import { ApiError, NetworkError, type ApiErrorEnvelope } from './errors';
-import type { Media } from '@/types/api';
+import type { BatchUploadResult, FailedUpload, Media } from '@/types/api';
 
 /**
  * Single silent Supabase refresh, shared by the fetch wrapper's retry path and
@@ -65,14 +65,28 @@ function xhrUpload(
 }
 
 /**
+ * Normalized upload result. `201` full success yields an empty `failed`; `207`
+ * partial success (some files hit STORAGE_UPLOAD_FAILED) carries both lists.
+ * Callers drive UI off `failed.length` — both are resolved, not thrown.
+ */
+export interface UploadOutcome {
+  succeeded: Media[];
+  failed: FailedUpload[];
+}
+
+/**
  * Upload media with per-file progress. Mirrors the fetch wrapper's contracts:
  * Bearer auth, single 401→refresh→retry, envelope→ApiError.
+ *
+ * Success has two shapes (SPEC_BACKEND_Media_Upload_Optimization §11.3):
+ * `201` → `Media[]`, `207` → `BatchUploadResult`. Both resolve to an
+ * `UploadOutcome`; only `4xx`/`502` throw an `ApiError`.
  */
 export async function uploadMedia(
   sessionId: string,
   files: File[],
   options: UploadOptions = {},
-): Promise<Media[]> {
+): Promise<UploadOutcome> {
   let { status, body } = await xhrUpload(sessionId, files, getAccessToken(), options);
 
   if (status === 401) {
@@ -82,6 +96,11 @@ export async function uploadMedia(
     }
   }
 
+  // 207 must NOT be treated as an error: some files stored, some failed storage.
+  if (status === 207) {
+    const result = JSON.parse(body) as BatchUploadResult;
+    return { succeeded: result.succeeded, failed: result.failed };
+  }
   if (status < 200 || status >= 300) throw parseEnvelopeError(status, body);
-  return JSON.parse(body) as Media[];
+  return { succeeded: JSON.parse(body) as Media[], failed: [] };
 }

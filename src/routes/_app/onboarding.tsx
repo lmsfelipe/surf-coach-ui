@@ -3,7 +3,7 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { GENDER_OPTIONS, SURF_LEVEL_OPTIONS } from '@/config/constants';
 import { onboardingSchema, type OnboardingValues } from '@/schemas/profile';
-import { profileQueryOptions, useProfile } from '@/hooks/queries/profile';
+import { profileQueryOptions } from '@/hooks/queries/profile';
 import { useUpdateProfile } from '@/hooks/mutations/profile';
 import { handleMutationError } from '@/lib/api/formErrors';
 import { isProfileComplete } from '@/lib/profile';
@@ -12,7 +12,6 @@ import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { SubmitBar } from '@/components/layout/SubmitBar';
-import { TextField } from '@/components/forms/TextField';
 import { SelectField } from '@/components/forms/SelectField';
 import { NumberField } from '@/components/forms/NumberField';
 import { DateField } from '@/components/forms/DateField';
@@ -31,11 +30,9 @@ export const Route = createFileRoute('/_app/onboarding')({
 
 function OnboardingScreen() {
   const navigate = useNavigate();
-  const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
   const form = useForm<OnboardingValues>({
     resolver: zodResolver(onboardingSchema),
-    defaultValues: { name: profile.name ?? undefined },
   });
 
   async function onSubmit(values: OnboardingValues) {
@@ -62,7 +59,6 @@ function OnboardingScreen() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 flex-col">
           <div className="flex-1 px-5 pb-6 pt-[18px]">
             <Card>
-              <TextField name="name" label="Nome" autoComplete="name" />
               <SelectField
                 name="surfLevel"
                 label="Nível de surf"

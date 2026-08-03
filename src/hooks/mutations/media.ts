@@ -14,8 +14,14 @@ export function useUploadMedia(sessionId: string) {
   return useMutation({
     mutationFn: ({ files, onProgress }: UploadVars) =>
       uploadMedia(sessionId, files, { onProgress }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: qk.media.bySession(sessionId) }),
+    // A 207 partial success resolves with an empty `succeeded` only if every
+    // file failed storage (that path is a 502 → onError), so refetch the gallery
+    // whenever at least one file actually stored.
+    onSuccess: ({ succeeded }) => {
+      if (succeeded.length) {
+        queryClient.invalidateQueries({ queryKey: qk.media.bySession(sessionId) });
+      }
+    },
   });
 }
 

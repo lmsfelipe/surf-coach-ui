@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { MEDIA_ACCEPT_ATTR } from "@/config/constants";
+import { MAX_IMAGES_PER_SESSION, MEDIA_ACCEPT_ATTR } from "@/config/constants";
 import { mediaQueryOptions, useSessionMedia } from "@/hooks/queries/media";
 import { useDeleteMedia, useUploadMedia } from "@/hooks/mutations/media";
 import {
@@ -10,7 +10,8 @@ import {
   type ExistingMedia,
   type FileError,
 } from "@/lib/media/validation";
-import { ApiError, toUserMessage } from "@/lib/api/errors";
+import { ApiError, failedUploadMessage, toUserMessage } from "@/lib/api/errors";
+import type { FailedUpload } from "@/types/api";
 import {
   isModerationError,
   UploadErrorAlert,
@@ -18,11 +19,13 @@ import {
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SubmitBar } from "@/components/layout/SubmitBar";
 import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/feedback/Alert";
 import { Eyebrow } from "@/components/feedback/Eyebrow";
 import { MediaThumb } from "@/components/feedback/MediaThumb";
 import { DotPulser } from "@/components/feedback/DotPulser";
 import { MediaGridSkeleton } from "@/components/skeletons";
 import {
+  IconAlert,
   IconAlertCircle,
   IconImage,
   IconUpload,
@@ -50,14 +53,18 @@ function formatBytes(bytes: number): string {
 function FileRow({
   file,
   error,
+  storageError,
   uploading,
   onRemove,
 }: {
   file: File;
   error?: FileError;
+  /** pt-BR copy for a file that failed the storage stage on a prior 207 upload. */
+  storageError?: string;
   uploading: boolean;
   onRemove: () => void;
 }) {
+  const message = error?.message ?? storageError;
   return (
     <div className="flex items-center gap-3 rounded-xl bg-secondary p-[11px_13px]">
       <div className="flex size-10 shrink-0 items-center justify-center rounded-[9px] bg-[#0F1525] text-primary">
@@ -76,10 +83,10 @@ function FileRow({
             {formatBytes(file.size)}
           </span>
         </div>
-        {error && (
+        {message && (
           <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-danger">
             <IconAlertCircle size={12} />
-            {error.message}
+            {message}
           </div>
         )}
       </div>
@@ -88,7 +95,7 @@ function FileRow({
           type="button"
           onClick={onRemove}
           aria-label="Remover arquivo"
-          className="shrink-0 text-muted-foreground hover:text-foreground"
+          className="shrink-0 cursor-pointer text-muted-foreground hover:text-foreground"
         >
           <IconX size={16} />
         </button>
@@ -112,6 +119,11 @@ function UploadScreen() {
   const [selectionError, setSelectionError] = React.useState<string | null>(
     null
   );
+  // Files that failed the storage stage on the last 207 upload, keyed by name so
+  // a row can look up its pt-BR message and the user can retry just those.
+  const [failedUploads, setFailedUploads] = React.useState<
+    Map<string, FailedUpload>
+  >(new Map());
   const isUploading = uploadMedia.isPending;
 
   // Media already attached to the session constrains what can still be added:
@@ -128,6 +140,7 @@ function UploadScreen() {
 
   async function applySelection(next: File[]) {
     setFiles(next);
+    setFailedUploads(new Map());
     uploadMedia.reset();
     const result = await validateMediaFiles(next, existing);
     setFileErrors(result.fileErrors);
@@ -150,10 +163,30 @@ function UploadScreen() {
 
   async function handleUpload() {
     if (!canSubmit) return;
+    const batch = valid;
+    setFailedUploads(new Map());
     try {
-      await uploadMedia.mutateAsync({ files: valid });
-      toast.success("Mídia enviada.");
-      await navigate({ to: "/sessions/$sessionId", params: { sessionId } });
+      const { succeeded, failed } = await uploadMedia.mutateAsync({
+        files: batch,
+      });
+      if (failed.length === 0) {
+        toast.success("Mídia enviada.");
+        await navigate({ to: "/sessions/$sessionId", params: { sessionId } });
+        return;
+      }
+      // Storage-stage partial success (§11.4): the succeeded files are already
+      // saved (gallery refetched). Keep only the failed files selected so retry
+      // re-submits just those — never the whole batch — and stay on the screen.
+      // Staying also blocks "continue to review" until the set is restored,
+      // honoring the min-photos floor (§4.5).
+      const failedByName = new Map(failed.map((f) => [f.fileName, f]));
+      setFiles(batch.filter((f) => failedByName.has(f.name)));
+      setFileErrors(new Map());
+      setSelectionError(null);
+      setFailedUploads(failedByName);
+      toast.warning(
+        `${succeeded.length} enviada(s), ${failed.length} falhou(aram). Toque em “Tentar de novo”.`
+      );
     } catch (err) {
       if (!isModerationError(err)) {
         toast.error(toUserMessage(err));
@@ -164,7 +197,11 @@ function UploadScreen() {
     }
   }
 
-  const submitLabel = hasErrors ? "Corrija os arquivos" : "Enviar";
+  const submitLabel = hasErrors
+    ? "Corrija os arquivos"
+    : failedUploads.size > 0
+      ? "Tentar de novo"
+      : "Enviar";
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -182,7 +219,7 @@ function UploadScreen() {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={locked}
-          className="flex w-full flex-col items-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-border bg-card p-[30px_20px] text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          className="flex w-full cursor-pointer flex-col items-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-border bg-card p-[30px_20px] text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-50"
         >
           <div className="flex size-[52px] items-center justify-center rounded-[14px] bg-primary/[0.12] text-primary">
             <IconUpload size={24} />
@@ -191,7 +228,7 @@ function UploadScreen() {
             Toque pra escolher
           </div>
           <div className="text-[11.5px] leading-[17px] text-muted-foreground">
-            1 vídeo ou 3 fotos · ≤100MB
+            1 vídeo ou {MAX_IMAGES_PER_SESSION} fotos · ≤100MB
             <br />
             vídeo ≤120s
           </div>
@@ -215,6 +252,14 @@ function UploadScreen() {
           <UploadErrorAlert error={uploadMedia.error} />
         )}
 
+        {failedUploads.size > 0 && (
+          <Alert tone="warning" icon={<IconAlert />} className="mt-3">
+            Só as que falharam ficam aqui — as demais já foram salvas. Toque em
+            “Tentar de novo” para reenviá-las, remova com ✕ para continuar ou
+            escolha outras.
+          </Alert>
+        )}
+
         {files.length > 0 && (
           <div className="mt-[22px]">
             <Eyebrow>Selecionados</Eyebrow>
@@ -224,6 +269,11 @@ function UploadScreen() {
                   key={`${file.name}-${file.size}`}
                   file={file}
                   error={fileErrors.get(file)}
+                  storageError={
+                    failedUploads.has(file.name)
+                      ? failedUploadMessage(file.name)
+                      : undefined
+                  }
                   uploading={isUploading}
                   onRemove={() => removeFile(file)}
                 />

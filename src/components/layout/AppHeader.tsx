@@ -35,7 +35,7 @@ export function AppHeader({ title, onBack, action, hideAvatar }: AppHeaderProps)
           type="button"
           onClick={handleBack}
           aria-label="Voltar"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-foreground shadow-[var(--shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-secondary text-foreground shadow-[var(--shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <IconChevronLeft size={20} />
         </button>

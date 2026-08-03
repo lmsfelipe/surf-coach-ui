@@ -6,7 +6,7 @@ import { NavRail } from './NavRail';
  * Authenticated wrapper: desktop side rail (≥md) or mobile bottom nav + FAB,
  * with a centered scrollable content column. Onboarding renders bare (no nav).
  */
-const SESSION_FLOW_RE = /^\/sessions\/(new|[^/]+\/(upload|review|plan))$/;
+const SESSION_FLOW_RE = /^\/sessions\/(new|[^/]+\/upload)$/;
 
 export function AppShell() {
   const { pathname } = useLocation();

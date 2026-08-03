@@ -87,16 +87,14 @@ describe('sessionFormSchema', () => {
 });
 
 describe('onboardingSchema', () => {
-  it('requires name, surfLevel, height and weight', () => {
+  it('requires surfLevel, height and weight', () => {
     expect(onboardingSchema.safeParse({}).success).toBe(false);
-    // missing name is rejected
+    // missing surfLevel is rejected
     expect(
-      onboardingSchema.safeParse({ surfLevel: 'intermediate', heightCm: 180, weightKg: 75 })
-        .success,
+      onboardingSchema.safeParse({ heightCm: 180, weightKg: 75 }).success,
     ).toBe(false);
     expect(
       onboardingSchema.safeParse({
-        name: 'Kelly',
         surfLevel: 'intermediate',
         heightCm: 180,
         weightKg: 75,
@@ -106,7 +104,6 @@ describe('onboardingSchema', () => {
 
   it('accepts an optional birthday', () => {
     const r = onboardingSchema.safeParse({
-      name: 'Kelly',
       surfLevel: 'intermediate',
       heightCm: 180,
       weightKg: 75,
@@ -117,7 +114,6 @@ describe('onboardingSchema', () => {
 
   it('enforces height bounds', () => {
     const r = onboardingSchema.safeParse({
-      name: 'Kelly',
       surfLevel: 'beginner',
       heightCm: 90,
       weightKg: 75,

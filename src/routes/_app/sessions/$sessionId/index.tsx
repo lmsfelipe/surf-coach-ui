@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { useQueryErrorResetBoundary } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { BOARD_TYPE_OPTIONS } from '@/config/constants';
+import { BOARD_TYPE_OPTIONS, MAX_IMAGES_PER_SESSION } from '@/config/constants';
 import { sessionQueryOptions, useSession } from '@/hooks/queries/sessions';
 import { mediaQueryOptions, useSessionMedia } from '@/hooks/queries/media';
 import { reviewBySessionOptions, useReviewBySession } from '@/hooks/queries/reviews';
@@ -379,12 +379,14 @@ function SessionDetailScreen() {
               onClick={() =>
                 navigate({ to: '/sessions/$sessionId/upload', params: { sessionId } })
               }
-              className="flex w-full flex-col items-center gap-2 rounded-[18px] bg-card p-4 text-muted-foreground shadow-[var(--shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-[18px] bg-card p-4 text-muted-foreground shadow-[var(--shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex w-full flex-col items-center gap-2 rounded-xl border-[1.5px] border-dashed border-border bg-secondary py-[22px]">
                 <IconImage size={26} />
                 <span className="text-[12.5px] font-semibold text-soft">Adicionar mídia</span>
-                <span className="text-[11px] text-muted-foreground">1 vídeo ou até 3 fotos</span>
+                <span className="text-[11px] text-muted-foreground">
+                  1 vídeo ou até {MAX_IMAGES_PER_SESSION} fotos
+                </span>
               </div>
             </button>
           )}

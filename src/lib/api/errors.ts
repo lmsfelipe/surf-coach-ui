@@ -76,7 +76,8 @@ export const ERROR_MESSAGES_PT_BR: Record<string, string> = {
   REVIEW_NOT_FOUND: 'Análise não encontrada.',
   REVIEW_NOT_RETRYABLE: 'Somente análises com falha podem ser reagendadas.',
   TRAINING_PLAN_NOT_RETRYABLE: 'Somente planos com falha podem ser reagendados.',
-  STORAGE_UPLOAD_FAILED: 'Não conseguimos enviar o arquivo. Tente de novo?',
+  // Whole-request storage failure (502 — every file failed to store).
+  STORAGE_UPLOAD_FAILED: 'Falha no envio. Verifique sua conexão e tente novamente.',
   MEDIA_NOT_SURF_RELATED: 'Este conteúdo não parece ser de surfe ou esportes aquáticos.',
   EXPLICIT_CONTENT: 'O arquivo contém conteúdo explícito ou ofensivo e não pode ser enviado.',
   AI_GENERATION_FAILED: 'Não conseguimos gerar agora. Tente de novo?',
@@ -90,6 +91,15 @@ const FALLBACK_MESSAGE = 'Algo deu errado. Tente de novo?';
 
 export function errorMessage(code: string): string {
   return ERROR_MESSAGES_PT_BR[code] ?? FALLBACK_MESSAGE;
+}
+
+/**
+ * pt-BR copy for a single file that failed the storage stage in a 207 partial
+ * upload (§11.5). Named per-file so the user knows which file to retry — never
+ * surface the backend's English `message`.
+ */
+export function failedUploadMessage(fileName: string): string {
+  return `Não foi possível enviar ${fileName}. Tente novamente.`;
 }
 
 /** Resolve any thrown value to a pt-BR message for toasts/inline display. */

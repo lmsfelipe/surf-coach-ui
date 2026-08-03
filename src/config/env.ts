@@ -18,6 +18,17 @@ function requiredInProd(name: string, value: string | undefined, devFallback: st
   return import.meta.env.PROD ? required(name, value) : (value ?? devFallback);
 }
 
+/** Optional positive-integer override. Falls back to `fallback` when unset or invalid. */
+function optionalInt(name: string, value: string | undefined, fallback: number): number {
+  if (!value) return fallback;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    console.warn(`Ignoring invalid ${name}="${value}" (expected a positive integer); using ${fallback}.`);
+    return fallback;
+  }
+  return parsed;
+}
+
 export const env = {
   apiBaseUrl: requiredInProd(
     'VITE_API_BASE_URL',
@@ -31,4 +42,15 @@ export const env = {
   sentryDsn: import.meta.env.VITE_SENTRY_DSN,
   // Optional: Google Analytics stays a no-op when this is unset.
   gaMeasurementId: import.meta.env.VITE_GA_MEASUREMENT_ID,
+  // Session media photo count (mirrors the API rule; must match its config).
+  minImagesPerSession: optionalInt(
+    'VITE_MIN_IMAGES_PER_SESSION',
+    import.meta.env.VITE_MIN_IMAGES_PER_SESSION,
+    3,
+  ),
+  maxImagesPerSession: optionalInt(
+    'VITE_MAX_IMAGES_PER_SESSION',
+    import.meta.env.VITE_MAX_IMAGES_PER_SESSION,
+    3,
+  ),
 } as const;

@@ -89,7 +89,7 @@ export function validateSelectionRule(
   if (files.length === 0) return null;
 
   if (videos.length > 0 && images.length > 0) {
-    return 'Escolha 1 vídeo ou até 3 fotos — não os dois.';
+    return `Escolha 1 vídeo ou até ${MAX_IMAGES_PER_SESSION} fotos — não os dois.`;
   }
   if (videos.length > 1) return 'Envie apenas 1 vídeo por sessão.';
   if (images.length > MAX_IMAGES_PER_SESSION) {
