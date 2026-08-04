@@ -24,8 +24,17 @@ export const ACCEPTED_MEDIA_TYPES = [
 /** `accept` attribute value for file inputs. */
 export const MEDIA_ACCEPT_ATTR = ACCEPTED_MEDIA_TYPES.join(",");
 
-export const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
+export const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+export const MAX_VIDEO_SIZE_BYTES = 60 * 1024 * 1024; // 60 MB
 export const MAX_VIDEO_DURATION_SECONDS = 120;
+
+// Client-side image compression before upload. Re-encodes session photos to
+// JPEG, capped by longest edge + quality to cut upload time while keeping
+// enough detail for the AI technique analysis.
+export const IMAGE_COMPRESSION = {
+  quality: 0.6,
+  maxDimension: 1920, // applied to both maxWidth and maxHeight
+} as const;
 // Photo count per session — configurable via VITE_MIN/MAX_IMAGES_PER_SESSION
 // so ops can raise/lower the cap without a code change (must match the API).
 export const MIN_IMAGES_PER_SESSION = env.minImagesPerSession;

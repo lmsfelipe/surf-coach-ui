@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { toast } from 'sonner';
-import { ACCEPTED_IMAGE_TYPES, MAX_FILE_SIZE_BYTES } from '@/config/constants';
+import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_SIZE_BYTES } from '@/config/constants';
 import { uploadAvatar } from '@/lib/storage/avatar';
 import { useAuthStore } from '@/stores/authStore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,8 +33,8 @@ export function AvatarUploader({ value, initials, onUploaded, size = 64 }: Avata
       toast.error('Formato não aceito. Use JPG, PNG ou WebP.');
       return;
     }
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error('Arquivo muito grande (máx 100MB)');
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error('Arquivo muito grande (máx 10MB)');
       return;
     }
     if (!userId) {

@@ -109,6 +109,22 @@ function PlanScreen() {
     );
   }
 
+  // No score means the analysis didn't rate a surf session (e.g. off-topic
+  // media), so there's nothing to build a plan from. Guard the direct route
+  // too, not just the review CTA — otherwise a malicious upload could keep
+  // firing AI plan generation here. Revisit once content moderation gates
+  // this upstream.
+  if (review.overallScore == null) {
+    return (
+      <NeedsReview
+        sessionId={sessionId}
+        header={header}
+        title="Sem treino pra essa sessão"
+        subtitle="Essa análise não gerou pontuação, então não dá pra montar um treino."
+      />
+    );
+  }
+
   return <PlanContent reviewId={review.id} header={header} />;
 }
 

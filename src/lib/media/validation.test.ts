@@ -5,7 +5,7 @@ import {
   validateFileSync,
   validateSelectionRule,
 } from './validation';
-import { MAX_FILE_SIZE_BYTES } from '@/config/constants';
+import { MAX_IMAGE_SIZE_BYTES, MAX_VIDEO_SIZE_BYTES } from '@/config/constants';
 
 function file(name: string, type: string, size = 1024): File {
   const f = new File(['x'], name, { type });
@@ -118,8 +118,18 @@ describe('validateFileSync', () => {
     expect(validateFileSync(file('a.gif', 'image/gif'))?.code).toBe('INVALID_MEDIA_TYPE');
   });
 
-  it('flags an oversized file', () => {
-    const big = file('huge.mp4', 'video/mp4', MAX_FILE_SIZE_BYTES + 1);
+  it('flags an oversized video', () => {
+    const big = file('huge.mp4', 'video/mp4', MAX_VIDEO_SIZE_BYTES + 1);
     expect(validateFileSync(big)?.code).toBe('FILE_TOO_LARGE');
+  });
+
+  it('flags an oversized image', () => {
+    const big = file('huge.jpg', 'image/jpeg', MAX_IMAGE_SIZE_BYTES + 1);
+    expect(validateFileSync(big)?.code).toBe('FILE_TOO_LARGE');
+  });
+
+  it('allows a video just under the video cap even though it exceeds the image cap', () => {
+    const ok = file('clip.mp4', 'video/mp4', MAX_IMAGE_SIZE_BYTES + 1);
+    expect(validateFileSync(ok)).toBeNull();
   });
 });

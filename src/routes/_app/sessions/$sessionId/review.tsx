@@ -246,9 +246,14 @@ function ReviewScreen() {
           </section>
         )}
 
-        <div className="mt-[22px] pb-6">
-          <PlanCta reviewId={review.id} sessionId={sessionId} />
-        </div>
+        {/* No score means the media wasn't surf — hide the plan CTA so a
+            malicious upload can't keep triggering AI plan generation.
+            Revisit once content moderation gates this upstream. */}
+        {review.overallScore != null && (
+          <div className="mt-[22px] pb-6">
+            <PlanCta reviewId={review.id} sessionId={sessionId} />
+          </div>
+        )}
       </div>
     </>
   );

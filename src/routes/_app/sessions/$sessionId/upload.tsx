@@ -10,6 +10,7 @@ import {
   type ExistingMedia,
   type FileError,
 } from "@/lib/media/validation";
+import { compressBatch } from "@/lib/media/compress";
 import { ApiError, failedUploadMessage, toUserMessage } from "@/lib/api/errors";
 import type { FailedUpload } from "@/types/api";
 import {
@@ -124,6 +125,9 @@ function UploadScreen() {
   const [failedUploads, setFailedUploads] = React.useState<
     Map<string, FailedUpload>
   >(new Map());
+  // True while a fresh pick is being compressed + validated (before it lands in
+  // `files`), so the picker and submit stay disabled and we can show a hint.
+  const [isProcessing, setIsProcessing] = React.useState(false);
   const isUploading = uploadMedia.isPending;
 
   // Media already attached to the session constrains what can still be added:
@@ -150,7 +154,18 @@ function UploadScreen() {
   function handleSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (picked.length) void applySelection(resolveMediaBatch(picked));
+    if (!picked.length) return;
+    void (async () => {
+      setIsProcessing(true);
+      try {
+        // Compress images (videos pass through) before validating, so an
+        // oversized-but-shrinkable photo can still make it under the size cap.
+        const prepared = await compressBatch(resolveMediaBatch(picked));
+        await applySelection(prepared);
+      } finally {
+        setIsProcessing(false);
+      }
+    })();
   }
 
   function removeFile(file: File) {
@@ -159,7 +174,8 @@ function UploadScreen() {
 
   const valid = files.filter((f) => !fileErrors.has(f));
   const hasErrors = fileErrors.size > 0 || selectionError != null;
-  const canSubmit = valid.length > 0 && !hasErrors && !isUploading;
+  const canSubmit =
+    valid.length > 0 && !hasErrors && !isUploading && !isProcessing;
 
   async function handleUpload() {
     if (!canSubmit) return;
@@ -218,7 +234,7 @@ function UploadScreen() {
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          disabled={locked}
+          disabled={locked || isProcessing}
           className="flex w-full cursor-pointer flex-col items-center gap-2.5 rounded-[18px] border-[1.5px] border-dashed border-border bg-card p-[30px_20px] text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-50"
         >
           <div className="flex size-[52px] items-center justify-center rounded-[14px] bg-primary/[0.12] text-primary">
@@ -228,11 +244,18 @@ function UploadScreen() {
             Toque pra escolher
           </div>
           <div className="text-[11.5px] leading-[17px] text-muted-foreground">
-            1 vídeo ou {MAX_IMAGES_PER_SESSION} fotos · ≤100MB
+            1 vídeo ou {MAX_IMAGES_PER_SESSION} fotos
             <br />
-            vídeo ≤120s
+            fotos ≤10MB · vídeo ≤60MB e ≤120s
           </div>
         </button>
+
+        {isProcessing && (
+          <p className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <DotPulser />
+            Otimizando fotos…
+          </p>
+        )}
 
         {locked && (
           <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">

@@ -6,7 +6,8 @@ import {
   ACCEPTED_IMAGE_TYPES,
   ACCEPTED_MEDIA_TYPES,
   ACCEPTED_VIDEO_TYPES,
-  MAX_FILE_SIZE_BYTES,
+  MAX_IMAGE_SIZE_BYTES,
+  MAX_VIDEO_SIZE_BYTES,
   MAX_IMAGES_PER_SESSION,
   MIN_IMAGES_PER_SESSION,
   MAX_VIDEO_DURATION_SECONDS,
@@ -16,7 +17,7 @@ import type { MediaType } from '@/types/api';
 export type MediaErrorCode = 'FILE_TOO_LARGE' | 'VIDEO_TOO_LONG' | 'INVALID_MEDIA_TYPE';
 
 export const MEDIA_ERROR_MESSAGES: Record<MediaErrorCode, string> = {
-  FILE_TOO_LARGE: 'Arquivo muito grande (máx 100MB)',
+  FILE_TOO_LARGE: 'Arquivo muito grande',
   VIDEO_TOO_LONG: 'Vídeo acima de 120s',
   INVALID_MEDIA_TYPE: 'Formato não aceito',
 };
@@ -106,8 +107,11 @@ export function validateFileSync(file: File): FileError | null {
   if (!(ACCEPTED_MEDIA_TYPES as readonly string[]).includes(file.type)) {
     return { code: 'INVALID_MEDIA_TYPE', message: MEDIA_ERROR_MESSAGES.INVALID_MEDIA_TYPE };
   }
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    return { code: 'FILE_TOO_LARGE', message: MEDIA_ERROR_MESSAGES.FILE_TOO_LARGE };
+  const isVideo = classifyMedia(file) === 'video';
+  const maxSize = isVideo ? MAX_VIDEO_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES;
+  if (file.size > maxSize) {
+    const message = isVideo ? 'Vídeo muito grande (máx 60MB)' : 'Imagem muito grande (máx 10MB)';
+    return { code: 'FILE_TOO_LARGE', message };
   }
   return null;
 }
