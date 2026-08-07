@@ -5,6 +5,7 @@ import { MAX_IMAGES_PER_SESSION, MEDIA_ACCEPT_ATTR } from "@/config/constants";
 import { mediaQueryOptions, useSessionMedia } from "@/hooks/queries/media";
 import { useDeleteMedia, useUploadMedia } from "@/hooks/mutations/media";
 import {
+  classifyMedia,
   resolveMediaBatch,
   validateMediaFiles,
   type ExistingMedia,
@@ -125,9 +126,14 @@ function UploadScreen() {
   const [failedUploads, setFailedUploads] = React.useState<
     Map<string, FailedUpload>
   >(new Map());
-  // True while a fresh pick is being compressed + validated (before it lands in
-  // `files`), so the picker and submit stay disabled and we can show a hint.
-  const [isProcessing, setIsProcessing] = React.useState(false);
+  // Set while a fresh pick is being compressed + validated (before it lands in
+  // `files`), so the picker and submit stay disabled. `kind` picks the copy and
+  // `progress` (0..1) drives the video bar; images finish too fast to track.
+  const [processing, setProcessing] = React.useState<{
+    kind: "image" | "video";
+    progress: number;
+  } | null>(null);
+  const isProcessing = processing !== null;
   const isUploading = uploadMedia.isPending;
 
   // Media already attached to the session constrains what can still be added:
@@ -155,15 +161,22 @@ function UploadScreen() {
     const picked = Array.from(e.target.files ?? []);
     e.target.value = "";
     if (!picked.length) return;
+    const batch = resolveMediaBatch(picked);
+    const kind = batch.some((f) => classifyMedia(f) === "video")
+      ? "video"
+      : "image";
     void (async () => {
-      setIsProcessing(true);
+      setProcessing({ kind, progress: 0 });
       try {
-        // Compress images (videos pass through) before validating, so an
-        // oversized-but-shrinkable photo can still make it under the size cap.
-        const prepared = await compressBatch(resolveMediaBatch(picked));
+        // Compress before validating, so an oversized-but-shrinkable file can
+        // still land under the size cap. Images → JPEG; a video → H.264 MP4 via
+        // WebCodecs (falls back to the original where unsupported).
+        const prepared = await compressBatch(batch, (fraction) =>
+          setProcessing((p) => (p ? { ...p, progress: fraction } : p))
+        );
         await applySelection(prepared);
       } finally {
-        setIsProcessing(false);
+        setProcessing(null);
       }
     })();
   }
@@ -244,18 +257,34 @@ function UploadScreen() {
             Toque pra escolher
           </div>
           <div className="text-[11.5px] leading-[17px] text-muted-foreground">
-            1 vídeo ou {MAX_IMAGES_PER_SESSION} fotos
+            1 vídeo ou até {MAX_IMAGES_PER_SESSION} fotos
             <br />
             fotos ≤10MB · vídeo ≤60MB e ≤120s
           </div>
         </button>
 
-        {isProcessing && (
-          <p className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-            <DotPulser />
-            Otimizando fotos…
-          </p>
-        )}
+        {processing &&
+          (processing.kind === "video" ? (
+            <div className="mt-3">
+              <p className="mb-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                <DotPulser />
+                Comprimindo vídeo… {Math.round(processing.progress * 100)}%
+              </p>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-200"
+                  style={{
+                    width: `${Math.max(3, Math.round(processing.progress * 100))}%`,
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <p className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
+              <DotPulser />
+              Otimizando fotos…
+            </p>
+          ))}
 
         {locked && (
           <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">

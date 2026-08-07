@@ -62,7 +62,7 @@ describe('sessionFormSchema', () => {
     const r = sessionFormSchema.safeParse({
       sessionDate: '2026-06-01',
       location: 'Maresias',
-      waveSizeMeters: 1.4,
+      waveSize: 1.4,
     });
     expect(r.success).toBe(true);
   });
@@ -71,7 +71,7 @@ describe('sessionFormSchema', () => {
     const r = sessionFormSchema.safeParse({
       sessionDate: '01/06/2026',
       location: 'Maresias',
-      waveSizeMeters: 1.4,
+      waveSize: 1.4,
     });
     expect(r.success).toBe(false);
   });
@@ -80,7 +80,7 @@ describe('sessionFormSchema', () => {
     const r = sessionFormSchema.safeParse({
       sessionDate: '2026-06-01',
       location: 'Maresias',
-      waveSizeMeters: 0,
+      waveSize: 0,
     });
     expect(r.success).toBe(false);
   });

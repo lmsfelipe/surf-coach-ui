@@ -5,7 +5,7 @@
 > **Status:** Draft for review
 > **Last updated:** 2026-06-01
 
-**Global conventions:** brand **SurfRise** · mobile-first · **dark-only "Midnight Electric"** · single accent = electric `#3D5BFF` · pt-BR copy ("você", "·" separator, no emoji) · 3-tab bottom bar + center FAB · progress-bar score viz · **skeletons** for content, **3-dot pulser (no spinner)** for AI/indeterminate · wave size shown in **meters** (feet in API). See `SPEC_FRONTEND_StyleGuide.md` for tokens & components.
+**Global conventions:** brand **SurfRise** · mobile-first · **dark-only "Midnight Electric"** · single accent = electric `#3D5BFF` · pt-BR copy ("você", "·" separator, no emoji) · 3-tab bottom bar + center FAB · progress-bar score viz · **skeletons** for content, **3-dot pulser (no spinner)** for AI/indeterminate · wave size shown in **meters** (meters in API too). See `SPEC_FRONTEND_StyleGuide.md` for tokens & components.
 
 ---
 
@@ -160,7 +160,7 @@ App (authenticated)
 
 #### C1 — Session History `/sessions` (home)
 - **Sections:** Top bar "Sessões" + "+" action · scrollable list of **Session Cards** · primary "Nova sessão" CTA.
-- **Session Card shows:** location, date, wave size (m), board label (or "—"), overall score chip (or "Sem análise"). _Wave size displayed in meters; stored as feet — see style guide §8._
+- **Session Card shows:** location, date, wave size (m), board label (or "—"), overall score chip (or "Sem análise"). _Wave size displayed and stored in meters — see style guide §8._
 - **Components:** Session List (organism), Session Card (molecule), Empty State, Error State, Skeleton list.
 - **States:**
   - `loading` → skeleton cards.
@@ -170,10 +170,10 @@ App (authenticated)
 - **Copy:** "Sessões" · "Nova sessão" · "Sem análise" · empty: "Nenhuma sessão ainda".
 
 #### C2 — New Session `/sessions/new`
-- **Sections:** Back + title "Nova sessão" · Date (required) · Location (required) · Wave size ft (required) · Surfboard selector (optional, from inventory) · Notes (optional) · "Salvar".
+- **Sections:** Back + title "Nova sessão" · Date (required) · Location (required) · Wave size m (required) · Surfboard selector (optional, from inventory) · Notes (optional) · "Salvar".
 - **Components:** Form Fields, DatePicker, number input, Select (boards), Textarea, Button.
 - **States:** loading (boards select uses skeleton/disabled), validation errors, submit pending, success (→ detail or upload), error toast.
-- **Copy:** labels "Data", "Local", "Tamanho da onda (m)", "Prancha", "Observações" · CTA "Salvar e enviar mídia". (Wave size via Slider in meters; board size stays in feet — surf convention.)
+- **Copy:** labels "Data", "Local", "Tamanho da onda (m)", "Prancha", "Observações" · CTA "Salvar e enviar mídia". (Wave size via Slider in meters, matching the API; board size stays in feet — surf convention.)
 
 #### C3 — Session Detail `/sessions/$sessionId` (Option A — compact hub)
 - **Layout:** compact hub. Review and plan show **short summaries** only; full content lives on standalone `/review` and `/plan` routes (each with its own skeleton/error/retry).

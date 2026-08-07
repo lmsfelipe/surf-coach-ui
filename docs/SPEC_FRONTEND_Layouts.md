@@ -139,7 +139,7 @@ Required: surfLevel + height + weight (guard treats onboarding incomplete until 
 │ │ Data *                  │ │  DatePicker (YYYY-MM-DD)
 │ │ [ 25/05/26 ]            │ │
 │ │ Tamanho da onda *       │ │  Slider, meters, live readout
-│ │ Tamanho            0.9 m│ │   0.0–4.0m step .1 (store feet)
+│ │ Tamanho            0.9 m│ │   0.0–4.0m step .1
 │ │ ●━━━━━──────────────    │ │
 │ │ Prancha usada           │ │  Select from inventory (optional)
 │ │ [ Pranchinha 5'10"   ▾ ]│ │   empty → "Nenhuma prancha"+link

@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { LOCATION_MAX, NOTES_MAX, WAVE_SIZE_METERS } from '@/config/constants';
 
-/**
- * Session form. NOTE: `waveSizeMeters` is captured in METERS for the UI;
- * convert to feet via utils/units before sending to the API.
- */
+/** Session form. `waveSize` is captured in meters, matching the API. */
 export const sessionFormSchema = z.object({
   sessionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
   location: z
@@ -12,7 +9,7 @@ export const sessionFormSchema = z.object({
     .trim()
     .min(1, 'Informe o pico')
     .max(LOCATION_MAX, `Máximo ${LOCATION_MAX} caracteres`),
-  waveSizeMeters: z
+  waveSize: z
     .number({ invalid_type_error: 'Informe o tamanho da onda' })
     .gt(0, 'O tamanho deve ser maior que 0')
     .max(WAVE_SIZE_METERS.max, `Máximo ${WAVE_SIZE_METERS.max} m`),

@@ -7,7 +7,7 @@ describe('TrainingDisclaimer', () => {
     render(<TrainingDisclaimer />);
     const note = screen.getByRole('note');
     expect(note).toHaveTextContent(/sugestões gerais de mobilidade e equilíbrio/i);
-    expect(note).toHaveTextContent(/Mostre este treino ao seu educador físico/i);
+    expect(note).toHaveTextContent(/procure um profissional de educação física/i);
   });
 
   it('has no dismiss control — it stays visible whenever a plan is shown', () => {

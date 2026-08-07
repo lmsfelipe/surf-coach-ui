@@ -37,7 +37,7 @@ function NewSessionScreen() {
   const createSession = useCreateSession();
   const form = useForm<SessionFormValues>({
     resolver: zodResolver(sessionFormSchema),
-    defaultValues: { sessionDate: todayISODate(), location: '', waveSizeMeters: 1 },
+    defaultValues: { sessionDate: todayISODate(), location: '', waveSize: 1 },
   });
 
   const boardOptions = boards.map((b) => ({
@@ -79,7 +79,7 @@ function NewSessionScreen() {
               />
               <DateField name="sessionDate" label="Data" />
               <div className="mb-4">
-                <WaveSlider name="waveSizeMeters" label="Tamanho da onda" />
+                <WaveSlider name="waveSize" label="Tamanho da onda" />
               </div>
               {boardOptions.length > 0 ? (
                 <SelectField

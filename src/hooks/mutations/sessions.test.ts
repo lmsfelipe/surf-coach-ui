@@ -2,22 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { sessionFormToPayload } from './sessions';
 import type { SessionFormValues } from '@/schemas/session';
 
-describe('sessionFormToPayload — meters → feet at the boundary', () => {
+describe('sessionFormToPayload — meters end-to-end', () => {
   const base: SessionFormValues = {
     sessionDate: '2026-05-25',
     location: 'Canal 1',
-    waveSizeMeters: 1,
+    waveSize: 1,
   };
 
-  it('converts 1 m to ~3.28 ft (rounded to 2 decimals)', () => {
-    expect(sessionFormToPayload(base).waveSize).toBe(3.28);
+  it('passes wave size through unchanged', () => {
+    expect(sessionFormToPayload(base).waveSize).toBe(1);
   });
 
-  it('converts 2 m to ~6.56 ft', () => {
-    expect(sessionFormToPayload({ ...base, waveSizeMeters: 2 }).waveSize).toBe(6.56);
+  it('passes through a different wave size unchanged', () => {
+    expect(sessionFormToPayload({ ...base, waveSize: 2 }).waveSize).toBe(2);
   });
 
-  it('passes through the non-converted fields', () => {
+  it('passes through the other fields', () => {
     const payload = sessionFormToPayload({
       ...base,
       surfboardId: 'b1',

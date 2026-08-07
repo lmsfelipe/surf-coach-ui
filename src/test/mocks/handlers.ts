@@ -40,7 +40,7 @@ const sessions: Session[] = [
     profileId: 'p1',
     sessionDate: '2026-05-20',
     location: 'Maresias',
-    waveSize: 4.5,
+    waveSize: 1.4,
     surfboardId: 'b1',
     notes: null,
     createdAt: '2026-05-20T14:00:00Z',

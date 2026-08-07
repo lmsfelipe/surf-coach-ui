@@ -15,8 +15,8 @@ interface WaveSliderProps {
 }
 
 /**
- * Wave-size slider in METERS (0–4, step 0.1). Stores meters in the form; the
- * session mutation converts to feet on submit (§4.2). Big Inter Tight readout.
+ * Wave-size slider in METERS (0–4, step 0.1), matching the API 1:1.
+ * Big Inter Tight readout.
  */
 export function WaveSlider({ name, label }: WaveSliderProps) {
   const { control } = useFormContext();

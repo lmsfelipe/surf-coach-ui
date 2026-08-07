@@ -1,16 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { sessionsApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/queryKeys';
-import { metersToFeet, roundTo } from '@/utils/units';
 import type { SessionFormValues } from '@/schemas/session';
 import type { CreateSessionPayload, Session } from '@/types/api';
 
-/** Map the meters-based form values to the feet-based API payload (§4.2). */
+/** Maps form values to the API payload — wave size is meters end-to-end. */
 export function sessionFormToPayload(values: SessionFormValues): CreateSessionPayload {
   return {
     sessionDate: values.sessionDate,
     location: values.location,
-    waveSize: roundTo(metersToFeet(values.waveSizeMeters), 2),
+    waveSize: values.waveSize,
     surfboardId: values.surfboardId,
     notes: values.notes,
   };

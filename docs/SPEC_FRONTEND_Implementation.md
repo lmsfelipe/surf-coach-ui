@@ -29,7 +29,7 @@ src/
   stores/authStore.ts              # zustand: session/token, initAuth(), getAccessToken()
   schemas/{auth,profile,surfboard,session}.ts   # zod (meters for waveSize)
   types/api.ts                     # API models + request payloads
-  utils/units.ts                   # m↔ft (×0.3048), formatWaveSize
+  utils/units.ts                   # formatWaveSize (meters, no conversion)
   components/ui/{button,skeleton}.tsx           # shadcn base (more added via MCP)
   routes/{__root,index}.tsx        # root Outlet + placeholder (placeholder gets replaced)
   test/{setupTests.ts,mocks/*}     # Vitest + MSW
@@ -72,7 +72,7 @@ The export (`design/*.jsx`) is a **CDN-React + Babel canvas**: inline-style comp
    - Shadows: cards `shadow-sm`, menus/toast/hero `shadow-md`, modals `shadow-lg` (the bridge maps these to the export's dark shadows).
    - Fonts: numerics/scores → `font-display tabular-nums tracking-[-0.03em]` (`.t-numeric`); headings → `font-heading`; body → `font-body`. Reuse the `.t-*` classes from `colors_and_type.css` for type ramps where convenient.
 2. **Static props → typed props** bound to `src/types/api.ts`. e.g. `SessionCard({ s })` becomes `SessionCard({ session, boardLabel, score })` (see §3 prop contracts).
-3. **Units at the edge:** the export prints `{s.waveSize}m` directly. In the real app, props carry **meters already converted** via `utils/units.feetToMetersDisplay`; cards/sliders never see feet except the board-size field (which stays feet).
+3. **Units at the edge:** the export prints `{s.waveSize}m` directly, and the real app does the same — `waveSize` is meters end-to-end, formatted via `utils/units.formatWaveSize`; cards/sliders never see feet except the board-size field (which stays feet).
 4. **Brand glyphs stay inline SVG** (`IconWave`, `IconBoard`); everything else uses `lucide-react` (StyleGuide §10 mapping). Drop the canvas-only `StatusBar`, `PhoneFrame`, `Scroll`.
 5. **Accessibility upgrades the canvas lacked:** real `<button>`/`<a>` semantics, focus-visible rings (`ring-ring`), `aria-*` on icon-only buttons, `<label htmlFor>` in fields, dialog focus trap (use shadcn `alert-dialog`).
 6. **Controlled inputs:** the export uses `defaultValue` (uncontrolled). Real forms use **react-hook-form** controlled fields (§5).
@@ -107,7 +107,7 @@ Wrap shadcn `form`/`field` so screens stay declarative.
 | `TextareaField` | `textarea` | `{ name, label, rows?, maxLength?, hint? }`. |
 | `SelectField` | `select` | `{ name, label, options:{value,label}[], placeholder? }`. |
 | `NumberField` | numeric input | `{ name, label, suffix?, min?, max? }`; integers for height/weight. |
-| `WaveSlider` | `slider` | `{ name, label }`; **meters** (0–4 step .1), big Inter Tight readout + `m`; stores meters in the form, converts to feet on submit (§4.2). |
+| `WaveSlider` | `slider` | `{ name, label }`; **meters** (0–4 step .1), big Inter Tight readout + `m`; stores meters in the form, sent to the API as-is (§4.2). |
 | `DateField` | native date / `input[type=date]` | `{ name, label }`; emits `YYYY-MM-DD`. |
 | `AvatarUploader` | `avatar` + file input | `{ value, onUploaded(url) }`; client-direct upload to `profile-media` with progress overlay (§4.4). |
 
@@ -231,14 +231,14 @@ hooks/mutations/
   surfboards.ts     useCreateSurfboard()    → invalidate qk.surfboards.list()
                     useUpdateSurfboard(id)  → invalidate list + detail(id)
                     useDeleteSurfboard()    → OPTIMISTIC remove from list (cheap/reversible), rollback onError, toast
-  sessions.ts       useCreateSession()      → invalidate qk.sessions.list(); maps waveSizeMeters→feet (units.metersToFeet)
+  sessions.ts       useCreateSession()      → invalidate qk.sessions.list(); waveSize passed through as meters
                     useDeleteSession()      → invalidate qk.sessions.list(); confirm dialog (cascade warning)
   media.ts          useUploadMedia(id)      → invalidate qk.media.bySession(id)  (progress → §4.6)
                     useDeleteMedia(id)      → invalidate qk.media.bySession(id)
   reviews.ts        useCreateReview()       → AI mutation (§4.3); on success set qk.reviews.bySession + detail
   trainingPlans.ts  useCreateTrainingPlan() → AI mutation (§4.3); on success set qk.trainingPlans.byReview + detail
 ```
-- **Session create** converts at the boundary: `waveSize: roundTo(metersToFeet(values.waveSizeMeters), 2)` — never store meters in the API payload (StyleGuide §8).
+- **Session create** passes `waveSize` straight through from the form — no conversion, meters end-to-end (StyleGuide §8).
 - **Validation errors:** in mutation `onError`, if `ApiError.code==='VALIDATION_ERROR'`, surface `err.fieldErrors` back onto the RHF form via `setError` (Overview §5.2). Unexpected errors → sonner toast via `toUserMessage(err)`.
 
 ### 4.3 AI mutations (slow, 3–20s)
@@ -281,7 +281,7 @@ The list endpoint returns neither board label nor overall score. The list screen
 ## 5. Forms (react-hook-form + zod)
 
 - Every form uses `useForm({ resolver: zodResolver(<schema>) })` with the schemas already in `src/schemas/`.
-- **Wave size** captured in meters (`waveSizeMeters`), converted to feet on submit (§4.2). **Board size** stays feet.
+- **Wave size** captured in meters (`waveSize`), sent to the API unchanged (§4.2). **Board size** stays feet.
 - Server `VALIDATION_ERROR.details` mapped back to fields via `ApiError.fieldErrors` + `setError` (fallback to client zod).
 - Busy submit: `<Button disabled={isPending}>` with label replaced by `<DotPulser/>`, width preserved.
 - Form ↔ route map: `login/signup/forgot/reset` (`schemas/auth`), `onboarding` + `profile/edit` (`schemas/profile`), `sessions/new` (`schemas/session`), `boards/new` + `boards/$id/edit` (`schemas/surfboard`).
@@ -362,7 +362,7 @@ Already covered: units, schemas, error map. Add as components/hooks land:
 | 4 | AI calls | `useMutation` + `<AIState/>` (no skeleton); already-exists → navigate; AI-fail → inline retry. |
 | 5 | Media progress | **XHR uploader** (`lib/api/upload.ts`) — fetch can't report progress; shares envelope/refresh logic with `client.ts`. |
 | 6 | Avatar | **Client-direct** to `profile-media`, then `PATCH /me`; API never sees bytes. |
-| 7 | Units | Meters in UI / forms; convert to feet on submit; board size stays feet. |
+| 7 | Units | Meters in UI / forms and in the API; no conversion; board size stays feet. |
 | 8 | Score bars | **Kit default** (white-55% + accent on highest); value ramp opt-in only. |
 | 9 | Treinos tab | Placeholder until `GET /api/v1/training-plans` ships (backend dependency). |
 | 10 | Optimistic | Only `useDeleteSurfboard` (cheap/reversible); everything else invalidates. |

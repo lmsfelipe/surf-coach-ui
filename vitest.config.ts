@@ -20,6 +20,10 @@ export default defineConfig({
       VITE_SUPABASE_URL: 'http://localhost:54321',
       VITE_SUPABASE_ANON_KEY: 'test-anon-key',
       VITE_SUPABASE_AVATAR_BUCKET: 'profile-media',
+      // Pin the photo-count caps so tests don't inherit a developer's local
+      // .env (which may raise VITE_MAX_IMAGES_PER_SESSION). Tests assert "3 fotos".
+      VITE_MIN_IMAGES_PER_SESSION: '3',
+      VITE_MAX_IMAGES_PER_SESSION: '3',
     },
   },
 });

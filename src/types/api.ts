@@ -40,7 +40,7 @@ export interface Session {
   profileId: string;
   sessionDate: ISODate;
   location: string;
-  waveSize: number; // feet (convert to meters in UI)
+  waveSize: number; // meters
   surfboardId: string | null;
   notes: string | null;
   createdAt: ISODateTime;
@@ -154,7 +154,7 @@ export type UpdateSurfboardPayload = Partial<CreateSurfboardPayload>;
 export interface CreateSessionPayload {
   sessionDate: ISODate;
   location: string;
-  waveSize: number; // feet (already converted from meters)
+  waveSize: number; // meters
   surfboardId?: string;
   notes?: string;
 }

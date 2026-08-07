@@ -10,10 +10,17 @@ vi.mock('compressorjs', () => ({
   }),
 }));
 
+// Videos go through compressVideo (WebCodecs), which jsdom can't run — mock it.
+vi.mock('./compressVideo', () => ({
+  compressVideo: vi.fn((file: File) => Promise.resolve(file)),
+}));
+
 import Compressor from 'compressorjs';
 import { compressBatch, compressImage } from './compress';
+import { compressVideo } from './compressVideo';
 
 const MockCompressor = vi.mocked(Compressor);
+const mockCompressVideo = vi.mocked(compressVideo);
 
 function file(name: string, type: string, size = 1024): File {
   const f = new File(['x'], name, { type });
@@ -61,18 +68,30 @@ describe('compressImage', () => {
 });
 
 describe('compressBatch', () => {
-  it('passes videos through untouched (never invokes the compressor)', async () => {
+  it('delegates a video to compressVideo (never the image compressor)', async () => {
     const v = video();
     const [out] = await compressBatch([v]);
-    expect(out).toBe(v);
+    expect(mockCompressVideo).toHaveBeenCalledWith(v, expect.anything());
+    expect(out).toBe(v); // mock resolves to the same File
     expect(Compressor).not.toHaveBeenCalled();
   });
 
-  it('compresses images but leaves videos in place within a mixed batch', async () => {
+  it('compresses images and delegates videos within a mixed batch', async () => {
     const v = video();
     const out = await compressBatch([image(), v]);
     expect(out[0]?.type).toBe('image/jpeg');
     expect(out[0]?.name).toBe('photo.jpg');
     expect(out[1]).toBe(v);
+    expect(mockCompressVideo).toHaveBeenCalledWith(v, expect.anything());
+  });
+
+  it('reports overall progress, ending at 1 when a video finishes', async () => {
+    mockCompressVideo.mockImplementationOnce((file, opts) => {
+      opts?.onProgress?.(0.5);
+      return Promise.resolve(file);
+    });
+    const seen: number[] = [];
+    await compressBatch([video()], (f) => seen.push(f));
+    expect(seen).toEqual([0.5, 1]);
   });
 });

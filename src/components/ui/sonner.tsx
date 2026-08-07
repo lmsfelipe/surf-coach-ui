@@ -8,7 +8,7 @@ function Toaster(props: ToasterProps) {
   return (
     <Sonner
       theme="dark"
-      position="bottom-center"
+      position="top-right"
       toastOptions={{
         classNames: {
           toast:

@@ -236,12 +236,11 @@ The brand rule (root README): **"Never a spinner."** Reconciled with our suspens
 
 ---
 
-## 8. Units — Wave Size (meters in UI, feet in API)
+## 8. Units — Wave Size (meters end-to-end)
 
-- **API stores `waveSize` in feet.** **UI displays & inputs meters.**
-- Convert at the API boundary: `meters = feet * 0.3048`, `feet = meters / 0.3048`.
-- Slider: range ~`0.0–4.0 m`, step `0.1`, big Inter Tight readout + `m` unit (per the kit's Slider). Store the converted feet value on submit.
-- Centralize conversion in `utils/units.ts`; never scatter the 0.3048 factor.
+- **API stores and returns `waveSize` in meters.** UI inputs & displays the same value — no conversion.
+- Slider: range `0.0–4.0 m`, step `0.1`, big Inter Tight readout + `m` unit (per the kit's Slider).
+- Display formatting/rounding lives in `utils/units.ts` (`formatWaveSize`).
 
 ---
 
@@ -292,7 +291,7 @@ API returns 6 dimensions; the kit displayed 5 with nicer phrasing. Final labels:
 | 2 | Token source | `colors_and_type.css` is authoritative; root README dark-superseded except voice rules |
 | 3 | Accent | **Electric `#3D5BFF`** is the single accent (coral collapsed) |
 | 4 | Bottom nav | **3 tabs** (Sessões · Treinos · Perfil) + center FAB; **Evolução dropped** |
-| 5 | Wave unit | **Meters in UI**, feet in API, convert via `utils/units.ts` (×0.3048) |
+| 5 | Wave unit | **Meters end-to-end** (UI and API); no conversion needed |
 | 6 | Loading | **Skeletons** for content; **3-dot pulser** (no spinner) for AI/indeterminate & busy buttons |
 | 7 | Score labels | Kit's pt-BR phrasing for the 6 API dimensions (§9) |
 | 8 | Icons | `lucide-react`; keep inline SVG for surfboard/wave brand glyphs |

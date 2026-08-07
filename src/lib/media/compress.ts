@@ -39,13 +39,57 @@ export function compressImage(file: File): Promise<File> {
 }
 
 /**
- * Compress the image members of a picked batch; videos (and anything that isn't
- * a recognized image) are returned unchanged.
+ * Compress a picked batch before upload. Images are re-encoded to JPEG (in
+ * parallel, effectively instant); a video is transcoded to a smaller H.264 MP4
+ * via WebCodecs (see {@link compressVideo}), which takes real time — so an
+ * optional `onProgress` reports overall 0..1 for a determinate progress bar.
+ * Anything that can't be compressed (unsupported browser, error) passes through
+ * untouched, and the server stays authoritative on validation.
+ *
+ * `resolveMediaBatch` guarantees a batch is either images-only or a single
+ * video, but a mixed batch is still handled defensively.
  */
-export function compressBatch(files: File[]): Promise<File[]> {
-  return Promise.all(
-    files.map((f) =>
-      classifyMedia(f) === 'image' ? compressImage(f) : Promise.resolve(f),
-    ),
-  );
+export function compressBatch(
+  files: File[],
+  onProgress?: (fraction: number) => void,
+): Promise<File[]> {
+  const hasVideo = files.some((f) => classifyMedia(f) === 'video');
+
+  // Fast path: images only — parallel, with no meaningful progress to report.
+  if (!hasVideo) {
+    return Promise.all(
+      files.map((f) =>
+        classifyMedia(f) === 'image' ? compressImage(f) : Promise.resolve(f),
+      ),
+    );
+  }
+
+  // A video is present: process sequentially so per-video progress stays
+  // coherent and we never run multiple heavy WebCodecs encodes at once. Mediabunny
+  // is ~135 kB gzipped, so it's dynamically imported here — photo-only uploads
+  // never pay for it.
+  return (async () => {
+    const { compressVideo } = await import('./compressVideo');
+    const videoCount = files.filter((f) => classifyMedia(f) === 'video').length;
+    let videosDone = 0;
+    const out: File[] = [];
+    for (const f of files) {
+      const kind = classifyMedia(f);
+      if (kind === 'image') {
+        out.push(await compressImage(f));
+      } else if (kind === 'video') {
+        const base = videosDone / videoCount;
+        out.push(
+          await compressVideo(f, {
+            onProgress: (p) => onProgress?.(base + p / videoCount),
+          }),
+        );
+        videosDone += 1;
+        onProgress?.(videosDone / videoCount);
+      } else {
+        out.push(f);
+      }
+    }
+    return out;
+  })();
 }
