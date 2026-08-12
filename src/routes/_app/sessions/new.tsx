@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
-import { BOARD_TYPE_OPTIONS } from '@/config/constants';
+import { BOARD_TYPE_OPTIONS, LOCATION_MAX, NOTES_MAX } from '@/config/constants';
 import { sessionFormSchema, type SessionFormValues } from '@/schemas/session';
 import { surfboardsQueryOptions, useSurfboards } from '@/hooks/queries/surfboards';
 import { useCreateSession } from '@/hooks/mutations/sessions';
@@ -76,6 +76,7 @@ function NewSessionScreen() {
                 label="Qual foi o pico?"
                 placeholder="Ex.: Canal 1 — Santos/SP"
                 icon={<IconPin size={16} />}
+                maxLength={LOCATION_MAX}
               />
               <DateField name="sessionDate" label="Data" />
               <div className="mb-4">
@@ -105,6 +106,7 @@ function NewSessionScreen() {
                 optional
                 hint="Usado pela IA para contextualizar a análise."
                 placeholder="Vento de leste, ondas inconstantes mas com paredes bonitas…"
+                maxLength={NOTES_MAX}
               />
             </Card>
             <Button

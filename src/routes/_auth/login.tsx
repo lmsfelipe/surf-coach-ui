@@ -4,6 +4,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { loginSchema, type LoginValues } from '@/schemas/auth';
+import { EMAIL_MAX, PASSWORD_MAX } from '@/config/constants';
 import { supabase } from '@/lib/supabase';
 import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
@@ -57,12 +58,14 @@ function LoginScreen() {
             type="email"
             autoComplete="email"
             icon={<IconMail size={17} />}
+            maxLength={EMAIL_MAX}
           />
           <PasswordField
             name="password"
             label="Senha"
             autoComplete="current-password"
             icon={<IconLock size={17} />}
+            maxLength={PASSWORD_MAX}
           />
           <div className="-mt-1 mb-5 text-right">
             <Link to="/forgot-password" className="text-[12.5px] font-semibold text-primary">

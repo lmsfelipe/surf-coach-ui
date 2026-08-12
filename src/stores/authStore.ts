@@ -2,6 +2,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import * as Sentry from '@sentry/react';
 import { create } from 'zustand';
 import { identifyUser } from '@/lib/analytics';
+import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 
 interface AuthState {
@@ -14,12 +15,19 @@ interface AuthState {
   signOut: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   user: null,
   initialized: false,
   setSession: (session) => {
     const user = session?.user ?? null;
+    const previousUserId = get().user?.id ?? null;
+    // The signed-in user changed (including signing out) — any cached server
+    // state (profile, sessions, boards, ...) belongs to the previous user and
+    // must not leak into the next one.
+    if (previousUserId && previousUserId !== (user?.id ?? null)) {
+      queryClient.clear();
+    }
     // Attribute Sentry events to the signed-in user; cleared on sign-out.
     Sentry.setUser(user ? { id: user.id, email: user.email } : null);
     // Keep GA's user_id in sync (pseudonymous id only, never PII); cleared on sign-out.
@@ -29,7 +37,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setInitialized: (value) => set({ initialized: value }),
   signOut: async () => {
     await supabase.auth.signOut();
-    set({ session: null, user: null });
+    get().setSession(null);
   },
 }));
 

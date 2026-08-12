@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { signupSchema, type SignupValues } from '@/schemas/auth';
+import { EMAIL_MAX, NAME_MAX, PASSWORD_MAX } from '@/config/constants';
 import { supabase } from '@/lib/supabase';
 import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
@@ -96,19 +97,27 @@ function SignupScreen() {
       )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <TextField name="name" label="Nome" placeholder="Seu nome" autoComplete="name" />
+          <TextField
+            name="name"
+            label="Nome"
+            placeholder="Seu nome"
+            autoComplete="name"
+            maxLength={NAME_MAX}
+          />
           <TextField
             name="email"
             label="E-mail"
             type="email"
             autoComplete="email"
             icon={<IconMail size={17} />}
+            maxLength={EMAIL_MAX}
           />
           <PasswordField
             name="password"
             label="Senha"
             autoComplete="new-password"
             icon={<IconLock size={17} />}
+            maxLength={PASSWORD_MAX}
           />
           <div className="mt-1.5">
             <Button

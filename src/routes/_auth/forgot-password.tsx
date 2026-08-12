@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { forgotPasswordSchema, type ForgotPasswordValues } from '@/schemas/auth';
+import { EMAIL_MAX } from '@/config/constants';
 import { supabase } from '@/lib/supabase';
 import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
@@ -73,6 +74,7 @@ function ForgotPasswordScreen() {
             type="email"
             autoComplete="email"
             icon={<IconMail size={17} />}
+            maxLength={EMAIL_MAX}
           />
           <div className="mt-1.5">
             <Button

@@ -1,8 +1,17 @@
 import { z } from 'zod';
+import { EMAIL_MAX, PASSWORD_MAX } from '@/config/constants';
 import { nameSchema } from './profile';
 
-const emailSchema = z.string().trim().min(1, 'Informe seu e-mail').email('E-mail inválido');
-const passwordSchema = z.string().min(8, 'A senha precisa ter ao menos 8 caracteres');
+const emailSchema = z
+  .string()
+  .trim()
+  .min(1, 'Informe seu e-mail')
+  .max(EMAIL_MAX, `Máximo ${EMAIL_MAX} caracteres`)
+  .email('E-mail inválido');
+const passwordSchema = z
+  .string()
+  .min(8, 'A senha precisa ter ao menos 8 caracteres')
+  .max(PASSWORD_MAX, `Máximo ${PASSWORD_MAX} caracteres`);
 
 export const loginSchema = z.object({
   email: emailSchema,

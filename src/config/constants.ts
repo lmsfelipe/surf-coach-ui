@@ -119,6 +119,14 @@ export const NAME_MAX = 200;
 export const LOCATION_MAX = 200;
 export const NOTES_MAX = 1000;
 export const LABEL_MAX = 200;
+/** RFC 5321 max mailbox length — not server-documented, but a safe universal cap. */
+export const EMAIL_MAX = 254;
+/**
+ * Frontend-only UX cap for password inputs. Not server-documented; keeps
+ * pasted secrets/passphrases from growing unbounded while staying generous
+ * enough for password managers.
+ */
+export const PASSWORD_MAX = 128;
 /**
  * UX cap for the board nickname input — deliberately shorter than the server's
  * LABEL_MAX so long names can't blow out card/badge layouts. Display surfaces

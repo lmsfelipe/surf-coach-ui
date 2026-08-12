@@ -1,6 +1,6 @@
-import * as Sentry from '@sentry/react';
-import { env } from '@/config/env';
-import { ApiError } from '@/lib/api/errors';
+import * as Sentry from "@sentry/react";
+import { env } from "@/config/env";
+import { ApiError } from "@/lib/api/errors";
 
 /**
  * Initialize Sentry error monitoring. No-op when VITE_SENTRY_DSN is unset

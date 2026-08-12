@@ -4,6 +4,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { resetPasswordSchema, type ResetPasswordValues } from '@/schemas/auth';
+import { PASSWORD_MAX } from '@/config/constants';
 import { supabase } from '@/lib/supabase';
 import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
@@ -51,12 +52,14 @@ function ResetPasswordScreen() {
             label="Nova senha"
             autoComplete="new-password"
             icon={<IconLock size={17} />}
+            maxLength={PASSWORD_MAX}
           />
           <PasswordField
             name="confirmPassword"
             label="Confirmar senha"
             autoComplete="new-password"
             icon={<IconLock size={17} />}
+            maxLength={PASSWORD_MAX}
           />
           <div className="mt-1.5">
             <Button

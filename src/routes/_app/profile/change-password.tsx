@@ -4,6 +4,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { changePasswordSchema, type ChangePasswordValues } from '@/schemas/auth';
+import { PASSWORD_MAX } from '@/config/constants';
 import { supabase } from '@/lib/supabase';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Form } from '@/components/ui/form';
@@ -53,12 +54,14 @@ function ChangePasswordScreen() {
               label="Nova senha"
               autoComplete="new-password"
               icon={<IconLock size={17} />}
+              maxLength={PASSWORD_MAX}
             />
             <PasswordField
               name="confirmPassword"
               label="Confirmar nova senha"
               autoComplete="new-password"
               icon={<IconLock size={17} />}
+              maxLength={PASSWORD_MAX}
             />
           </form>
         </Form>

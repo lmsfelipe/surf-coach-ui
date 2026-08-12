@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import {
   GENDER_OPTIONS,
   HEIGHT_CM,
+  NAME_MAX,
   SURF_LEVEL_OPTIONS,
   WEIGHT_KG,
 } from '@/config/constants';
@@ -61,7 +62,7 @@ function EditProfileScreen() {
         <Form {...form}>
           <form id="profile-edit" onSubmit={form.handleSubmit(onSubmit)}>
             <Card>
-              <TextField name="name" label="Nome" autoComplete="name" />
+              <TextField name="name" label="Nome" autoComplete="name" maxLength={NAME_MAX} />
               <SelectField name="surfLevel" label="Nível de surf" options={SURF_LEVEL_OPTIONS} />
               <div className="flex gap-3">
                 <div className="flex-1">
