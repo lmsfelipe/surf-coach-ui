@@ -34,6 +34,7 @@ export function NumberField({
   placeholder,
 }: NumberFieldProps) {
   const { control } = useFormContext();
+  const inputMode = step && !Number.isInteger(step) ? 'decimal' : 'numeric';
   return (
     <FormField
       control={control}
@@ -45,7 +46,7 @@ export function NumberField({
             <FormControl>
               <Input
                 type="number"
-                inputMode="numeric"
+                inputMode={inputMode}
                 min={min}
                 max={max}
                 step={step}
