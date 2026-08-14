@@ -1,0 +1,303 @@
+/* Prototype fonts. Imported here rather than in index.html so the request ships
+   with the landing chunk only and never costs the authenticated app anything. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+/* ============================================================
+   Landing hero — ported from surf-hero.html, visually unchanged.
+
+   Every token is scoped to `.surf-hero` on purpose: this palette is the
+   prototype's warm teal/sunset direction, which deliberately does NOT match the
+   app's "Midnight Electric" system in styles/colors_and_type.css. Scoping keeps
+   the two from colliding — nothing here leaks past the landing page.
+   ============================================================ */
+
+.surf-hero {
+  --deep: #0a1b28;
+  --mid: #1c5a63;
+  --foam: #dceee6;
+  --horizon: #e8955b;
+  --glow: #f6c667;
+  --ink: #06121c;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  /* The prototype locked scrolling on <body>; scoping it to the hero gets the
+     same result without breaking scrolling everywhere else in the SPA. */
+  overflow: hidden;
+  background: var(--deep);
+  font-family: var(--font-body);
+  color: var(--foam);
+  /* The app's base style sets body to 14px/21px; the prototype was authored
+     against the browser defaults. Restoring them here keeps the wordmark, eyebrow
+     and CTA at their designed metrics instead of inheriting the app's rhythm. */
+  font-size: 16px;
+  line-height: normal;
+}
+
+/* Prototype used position: fixed. Inside a router that would escape the route
+   container and bleed over whatever renders next, so these are absolute within
+   the hero — identical at full-viewport, and safe once sections are added below. */
+.surf-hero .sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    var(--deep) 0%,
+    var(--deep) 32%,
+    #2c4f52 47%,
+    var(--horizon) 58%,
+    #b8703f 66%,
+    var(--deep) 100%
+  );
+}
+
+.surf-hero .ocean-mount {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.surf-hero .ocean {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* three.js is lazy-loaded; fade the canvas in when the first frame lands so
+     its arrival doesn't pop over the gradient. */
+  opacity: 0;
+  transition: opacity 600ms ease-out;
+}
+
+.surf-hero .ocean.is-ready {
+  opacity: 1;
+}
+
+.surf-hero .scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 27, 40, 0.55) 0%,
+    rgba(10, 27, 40, 0) 30%,
+    rgba(10, 27, 40, 0) 70%,
+    rgba(10, 27, 40, 0.35) 100%
+  );
+  pointer-events: none;
+}
+
+.surf-hero .layer {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(20px, 4vw, 48px);
+  /* Notch/home-indicator safety on the phones this is built for. */
+  padding-top: max(clamp(20px, 4vw, 48px), env(safe-area-inset-top));
+  padding-bottom: max(clamp(20px, 4vw, 48px), env(safe-area-inset-bottom));
+}
+
+.surf-hero .top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.surf-hero .wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+
+.surf-hero .locale-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--foam);
+  opacity: 0.6;
+  padding-top: 4px;
+}
+
+.surf-hero .main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.surf-hero .copy {
+  max-width: 620px;
+  animation: surf-hero-rise 900ms ease-out both;
+  animation-delay: 150ms;
+}
+
+.surf-hero .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--glow);
+  margin-bottom: 18px;
+}
+
+.surf-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(40px, 8vw, 84px);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  margin-bottom: 20px;
+}
+
+.surf-hero h1 span {
+  display: block;
+}
+
+.surf-hero .subhead {
+  font-size: clamp(15px, 1.6vw, 18px);
+  line-height: 1.55;
+  color: var(--foam);
+  opacity: 0.85;
+  max-width: 460px;
+  margin-bottom: 28px;
+}
+
+.surf-hero .cta {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--foam);
+  border: none;
+  border-radius: 999px;
+  padding: 15px 26px;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+.surf-hero .cta:hover {
+  background: var(--glow);
+  transform: translateY(-2px);
+}
+
+.surf-hero .cta:focus-visible {
+  outline: 2px solid var(--glow);
+  outline-offset: 4px;
+}
+
+.surf-hero .score-card {
+  font-family: var(--font-mono);
+  background: rgba(10, 27, 40, 0.45);
+  border: 1px solid rgba(220, 238, 230, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 18px 22px;
+  min-width: 220px;
+  animation: surf-hero-rise 900ms ease-out both;
+  animation-delay: 400ms;
+}
+
+.surf-hero .score-card .label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.surf-hero .score-card .session-line {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+
+.surf-hero .score-main {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.surf-hero .score-main .value {
+  font-size: 42px;
+  font-weight: 600;
+  color: var(--foam);
+}
+
+.surf-hero .score-main .value-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.surf-hero .score-sub-row {
+  display: flex;
+  gap: 20px;
+}
+
+.surf-hero .score-sub-row div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.surf-hero .score-sub-row .value {
+  font-size: 16px;
+}
+
+.surf-hero .score-sub-row .label {
+  font-size: 9px;
+}
+
+@keyframes surf-hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surf-hero .copy,
+  .surf-hero .score-card {
+    animation: none;
+  }
+
+  .surf-hero .cta {
+    transition: none;
+  }
+
+  .surf-hero .ocean {
+    transition: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .surf-hero .main-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .surf-hero .score-card {
+    align-self: stretch;
+  }
+}
