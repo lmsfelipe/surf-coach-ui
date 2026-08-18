@@ -25,5 +25,19 @@ export default defineConfig({
       VITE_MIN_IMAGES_PER_SESSION: '3',
       VITE_MAX_IMAGES_PER_SESSION: '3',
     },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/routeTree.gen.ts',
+        'src/test/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/components/landing/**',
+        'src/dev/**',
+        'src/types/**',
+        'src/vite-env.d.ts',
+      ],
+    },
   },
 });

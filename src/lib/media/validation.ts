@@ -151,6 +151,7 @@ export interface MediaValidationResult {
 export async function validateMediaFiles(
   files: File[],
   existing: ExistingMedia = NO_EXISTING_MEDIA,
+  probe: (file: File) => Promise<number> = probeVideoDuration,
 ): Promise<MediaValidationResult> {
   const fileErrors = new Map<File, FileError>();
   const selectionError = validateSelectionRule(files, existing);
@@ -163,7 +164,7 @@ export async function validateMediaFiles(
     }
     if (classifyMedia(file) === 'video') {
       try {
-        const duration = await probeVideoDuration(file);
+        const duration = await probe(file);
         if (duration > MAX_VIDEO_DURATION_SECONDS) {
           fileErrors.set(file, {
             code: 'VIDEO_TOO_LONG',

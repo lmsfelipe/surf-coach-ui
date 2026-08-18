@@ -1,6 +1,7 @@
 node_modules
 dist
 dist-ssr
+coverage
 *.local
 
 # incremental build state — stale entries make `tsc -b` skip real checks

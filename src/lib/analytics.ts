@@ -41,8 +41,13 @@ export function initAnalytics(): void {
   document.head.appendChild(script);
 
   window.dataLayer = window.dataLayer ?? [];
-  window.gtag = function gtag(...args: GtagArgs) {
-    window.dataLayer.push(args);
+  // Must push the `arguments` object, not an array. gtag.js only runs a queued
+  // entry as a command when `toString.call(entry) === '[object Arguments]'`; a
+  // real array is instead read as a legacy dotted method path ('event' -> no
+  // such method) and the resulting failure is swallowed by an empty catch, so
+  // every js/config/event is silently dropped and no hit is ever sent.
+  window.gtag = function gtag() {
+    window.dataLayer.push(arguments);
   };
 
   window.gtag('js', new Date());

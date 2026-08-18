@@ -51,7 +51,7 @@ function LoginScreen() {
         </div>
       )}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <TextField
             name="email"
             label="E-mail"

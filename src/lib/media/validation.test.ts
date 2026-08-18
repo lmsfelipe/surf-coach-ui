@@ -1,11 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   classifyMedia,
   resolveMediaBatch,
   validateFileSync,
+  validateMediaFiles,
   validateSelectionRule,
 } from './validation';
-import { MAX_IMAGE_SIZE_BYTES, MAX_VIDEO_SIZE_BYTES } from '@/config/constants';
+import { MAX_IMAGE_SIZE_BYTES, MAX_VIDEO_DURATION_SECONDS, MAX_VIDEO_SIZE_BYTES } from '@/config/constants';
 
 function file(name: string, type: string, size = 1024): File {
   const f = new File(['x'], name, { type });
@@ -61,6 +62,10 @@ describe('validateSelectionRule — against media already on the session', () =>
     expect(validateSelectionRule([video()], { type: 'video', imageCount: 0 })).toMatch(
       /já tem um vídeo/i,
     );
+  });
+
+  it('allows an empty pending selection when the session already has a video', () => {
+    expect(validateSelectionRule([], { type: 'video', imageCount: 0 })).toBeNull();
   });
 
   it('blocks adding a video when the session already has photos', () => {
@@ -131,5 +136,66 @@ describe('validateFileSync', () => {
   it('allows a video just under the video cap even though it exceeds the image cap', () => {
     const ok = file('clip.mp4', 'video/mp4', MAX_IMAGE_SIZE_BYTES + 1);
     expect(validateFileSync(ok)).toBeNull();
+  });
+});
+
+describe('validateMediaFiles — orchestrator (injected prober, no module mocking)', () => {
+  const okProbe = async () => 10; // seconds, well under the cap
+
+  it('separates valid files from per-file errors, keyed by the exact File object', async () => {
+    const goodA = image();
+    const goodB = image();
+    const bad = file('doc.pdf', 'application/pdf');
+
+    const result = await validateMediaFiles([goodA, goodB, bad], undefined, okProbe);
+
+    expect(result.valid).toEqual([goodA, goodB]);
+    expect(result.fileErrors.get(bad)?.code).toBe('INVALID_MEDIA_TYPE');
+    expect(result.fileErrors.has(goodA)).toBe(false);
+    expect(result.fileErrors.has(goodB)).toBe(false);
+  });
+
+  it('surfaces a selection-rule violation in selectionError while per-file checks still run', async () => {
+    const bad = file('doc.pdf', 'application/pdf');
+
+    const result = await validateMediaFiles(
+      [image(), image(), image(), image(), bad],
+      undefined,
+      okProbe,
+    );
+
+    expect(result.selectionError).toMatch(/3 fotos/i);
+    expect(result.fileErrors.get(bad)?.code).toBe('INVALID_MEDIA_TYPE');
+  });
+
+  it('flags a video over the duration cap as VIDEO_TOO_LONG', async () => {
+    const longProbe = async () => MAX_VIDEO_DURATION_SECONDS + 1;
+    const v = video();
+
+    const result = await validateMediaFiles([v], undefined, longProbe);
+
+    expect(result.fileErrors.get(v)?.code).toBe('VIDEO_TOO_LONG');
+    expect(result.valid).toEqual([]);
+  });
+
+  it('maps a probe rejection to INVALID_MEDIA_TYPE', async () => {
+    const failingProbe = async () => {
+      throw new Error('Não foi possível ler o vídeo.');
+    };
+    const v = video();
+
+    const result = await validateMediaFiles([v], undefined, failingProbe);
+
+    expect(result.fileErrors.get(v)?.code).toBe('INVALID_MEDIA_TYPE');
+  });
+
+  it('skips the duration probe entirely for a file that already failed sync validation', async () => {
+    const probe = vi.fn(async () => 10);
+    const oversized = file('huge.mp4', 'video/mp4', MAX_VIDEO_SIZE_BYTES + 1);
+
+    const result = await validateMediaFiles([oversized], undefined, probe);
+
+    expect(result.fileErrors.get(oversized)?.code).toBe('FILE_TOO_LARGE');
+    expect(probe).not.toHaveBeenCalled();
   });
 });

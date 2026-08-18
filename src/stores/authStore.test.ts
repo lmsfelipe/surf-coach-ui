@@ -2,12 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Session, User } from '@supabase/supabase-js';
 
 vi.mock('@/lib/supabase', () => ({
-  supabase: { auth: { signOut: vi.fn().mockResolvedValue({ error: null }) } },
+  supabase: {
+    auth: {
+      signOut: vi.fn().mockResolvedValue({ error: null }),
+      getSession: vi.fn(),
+      onAuthStateChange: vi.fn(),
+    },
+  },
 }));
+vi.mock('@sentry/react', () => ({ captureException: vi.fn(), setUser: vi.fn() }));
 
+import * as Sentry from '@sentry/react';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
-import { useAuthStore } from './authStore';
+import { initAuth, useAuthStore } from './authStore';
 
 const PROFILE_KEY = ['profile', 'me'];
 
@@ -62,5 +70,62 @@ describe('authStore — cross-user cache isolation', () => {
     useAuthStore.getState().setSession(sessionFor('user-a'));
 
     expect(queryClient.getQueryData(PROFILE_KEY)).toEqual({ id: 'user-a-profile' });
+  });
+});
+
+/**
+ * A failed session read must never trap the app on the boot splash — the
+ * `finally` in initAuth has to set `initialized` regardless of outcome, or
+ * the router's `initialized` guards hard-lock the user on first load.
+ */
+describe('authStore — initAuth', () => {
+  beforeEach(() => {
+    useAuthStore.setState({ session: null, user: null, initialized: false });
+    queryClient.clear();
+    vi.clearAllMocks();
+    vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    } as never);
+  });
+
+  it('hydrates the store from getSession and sets initialized', async () => {
+    const session = sessionFor('user-a');
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session },
+      error: null,
+    } as never);
+
+    await initAuth();
+
+    expect(useAuthStore.getState().session).toEqual(session);
+    expect(useAuthStore.getState().initialized).toBe(true);
+  });
+
+  it('sets initialized even when getSession rejects, leaving the user signed out', async () => {
+    vi.mocked(supabase.auth.getSession).mockRejectedValue(new Error('boom'));
+
+    await initAuth();
+
+    expect(useAuthStore.getState().initialized).toBe(true);
+    expect(useAuthStore.getState().user).toBeNull();
+    expect(Sentry.captureException).toHaveBeenCalledOnce();
+  });
+
+  it('updates the store when onAuthStateChange fires with a new session', async () => {
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session: null },
+      error: null,
+    } as never);
+    let capturedCallback: ((event: string, session: Session | null) => void) | undefined;
+    vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((cb) => {
+      capturedCallback = cb as never;
+      return { data: { subscription: { unsubscribe: vi.fn() } } } as never;
+    });
+
+    await initAuth();
+    const newSession = sessionFor('user-b');
+    capturedCallback?.('SIGNED_IN', newSession);
+
+    expect(useAuthStore.getState().session).toEqual(newSession);
   });
 });
