@@ -25,6 +25,23 @@ function enabled(): boolean {
   return Boolean(env.gaMeasurementId) && import.meta.env.MODE !== 'test';
 }
 
+/** The registrable domain the app is served from; cookies are shared across its subdomains. */
+const COOKIE_DOMAIN = 'surfrise.com.br';
+
+/**
+ * GA's default `cookie_domain: 'auto'` probes candidates broadest-first, so under
+ * a multi-part ccTLD its first attempt is the public suffix `com.br`. Every
+ * browser rejects that, and Firefox logs "rejected for invalid domain" each time.
+ * Naming the domain skips the probe — it is what 'auto' settles on anyway, so
+ * cookie scope is unchanged. Any other host (previews, local) keeps 'auto',
+ * since a domain the browser can't match would fail to set the cookie at all.
+ */
+function cookieDomain(): string {
+  const { hostname } = window.location;
+  const onProdDomain = hostname === COOKIE_DOMAIN || hostname.endsWith(`.${COOKIE_DOMAIN}`);
+  return onProdDomain ? COOKIE_DOMAIN : 'auto';
+}
+
 /**
  * Inject the gtag.js snippet and configure the property. `send_page_view: false`
  * hands page-view control to us so the single-page app reports real navigations
@@ -51,7 +68,7 @@ export function initAnalytics(): void {
   };
 
   window.gtag('js', new Date());
-  window.gtag('config', id, { send_page_view: false });
+  window.gtag('config', id, { send_page_view: false, cookie_domain: cookieDomain() });
 }
 
 /** Report a single-page-app navigation as a GA page_view. */

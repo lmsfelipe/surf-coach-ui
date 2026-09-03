@@ -45,19 +45,9 @@ function BoardsScreen() {
   const deleteBoard = useDeleteSurfboard();
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
 
-  const addAction = (
-    <Link
-      to="/boards/new"
-      aria-label="Adicionar prancha"
-      className="flex size-9 items-center justify-center rounded-full bg-primary text-white shadow-[0_6px_16px_rgba(61,91,255,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      <IconPlus size={20} />
-    </Link>
-  );
-
   return (
     <>
-      <AppHeader onBack title="Pranchas" action={addAction} />
+      <AppHeader onBack title="Pranchas" />
       {boards.length === 0 ? (
         <div className="pt-[30px]">
           <EmptyState
@@ -75,17 +65,25 @@ function BoardsScreen() {
           />
         </div>
       ) : (
-        <div className="flex flex-col gap-3 px-5 pt-1.5 lg:grid lg:grid-cols-2">
-          {boards.map((board) => (
-            <BoardCard
-              key={board.id}
-              board={board}
-              onEdit={() =>
-                navigate({ to: '/boards/$boardId/edit', params: { boardId: board.id } })
-              }
-              onDelete={() => setDeleteId(board.id)}
-            />
-          ))}
+        <div className="flex flex-col gap-3 px-5 pt-1.5">
+          <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2">
+            {boards.map((board) => (
+              <BoardCard
+                key={board.id}
+                board={board}
+                onEdit={() =>
+                  navigate({ to: '/boards/$boardId/edit', params: { boardId: board.id } })
+                }
+                onDelete={() => setDeleteId(board.id)}
+              />
+            ))}
+          </div>
+          <Button asChild className="w-full">
+            <Link to="/boards/new">
+              <IconPlus size={16} />
+              Adicionar
+            </Link>
+          </Button>
         </div>
       )}
 

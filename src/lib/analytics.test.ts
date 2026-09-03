@@ -37,6 +37,18 @@ describe('analytics', () => {
     expect(window.dataLayer.every(isExecutableCommand)).toBe(true);
   });
 
+  it('leaves cookie_domain on auto for hosts outside the production domain', async () => {
+    const { initAnalytics } = await import('@/lib/analytics');
+
+    initAnalytics();
+
+    // jsdom serves from localhost. Naming a domain the browser cannot match
+    // there would stop the cookie from being set at all, breaking previews.
+    const [command, , params] = Array.from(window.dataLayer[1] as IArguments);
+    expect(command).toBe('config');
+    expect((params as Record<string, unknown>).cookie_domain).toBe('auto');
+  });
+
   it('loads gtag.js for the configured measurement id', async () => {
     const { initAnalytics } = await import('@/lib/analytics');
 
