@@ -1,5 +1,6 @@
+import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { BOARD_TYPE_OPTIONS, LOCATION_MAX, NOTES_MAX } from '@/config/constants';
 import { sessionFormSchema, type SessionFormValues } from '@/schemas/session';
@@ -7,6 +8,7 @@ import { surfboardsQueryOptions, useSurfboards } from '@/hooks/queries/surfboard
 import { useCreateSession } from '@/hooks/mutations/sessions';
 import { handleMutationError } from '@/lib/api/formErrors';
 import { todayISODate } from '@/utils/dates';
+import type { Surfboard } from '@/types/api';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
@@ -16,6 +18,7 @@ import { DateField } from '@/components/forms/DateField';
 import { WaveSlider } from '@/components/forms/WaveSlider';
 import { SelectField } from '@/components/forms/SelectField';
 import { TextareaField } from '@/components/forms/TextareaField';
+import { CreateBoardDialog } from '@/components/forms/CreateBoardDialog';
 import { DotPulser } from '@/components/feedback/DotPulser';
 import { FormSkeleton } from '@/components/skeletons';
 import { IconPin } from '@/components/icons';
@@ -35,6 +38,7 @@ function NewSessionScreen() {
   const navigate = useNavigate();
   const { data: boards } = useSurfboards();
   const createSession = useCreateSession();
+  const [boardDialogOpen, setBoardDialogOpen] = React.useState(false);
   const form = useForm<SessionFormValues>({
     resolver: zodResolver(sessionFormSchema),
     defaultValues: { sessionDate: todayISODate(), location: '', waveSize: 1 },
@@ -46,6 +50,10 @@ function NewSessionScreen() {
       b.label ||
       `${BOARD_TYPE_OPTIONS.find((o) => o.value === b.boardType)?.label ?? b.boardType} ${b.boardSize}'`,
   }));
+
+  function handleBoardCreated(board: Surfboard) {
+    form.setValue('surfboardId', board.id, { shouldDirty: true, shouldValidate: true });
+  }
 
   async function onSubmit(values: SessionFormValues) {
     try {
@@ -95,8 +103,14 @@ function NewSessionScreen() {
                   <span className="text-[12.5px] text-muted-foreground">
                     Você ainda não cadastrou uma prancha
                   </span>
-                  <Button asChild variant="outline" size="sm" className="shrink-0">
-                    <Link to="/boards/new">Cadastrar prancha</Link>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => setBoardDialogOpen(true)}
+                  >
+                    Cadastrar prancha
                   </Button>
                 </div>
               )}
@@ -120,6 +134,11 @@ function NewSessionScreen() {
           </div>
         </form>
       </Form>
+      <CreateBoardDialog
+        open={boardDialogOpen}
+        onOpenChange={setBoardDialogOpen}
+        onCreated={handleBoardCreated}
+      />
     </div>
   );
 }

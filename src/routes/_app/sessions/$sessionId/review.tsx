@@ -89,19 +89,21 @@ function ReviewScreen() {
   const { data: review, refetch, timedOut } = useReviewBySession(sessionId);
   const createReview = useCreateReview(sessionId);
   const { mutate: retry, isPending: isRetrying } = useRetryReview();
-  const [errorCode, setErrorCode] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<ApiError | null>(null);
   const triggered = React.useRef(false);
 
   const generate = React.useCallback(() => {
-    setErrorCode(null);
+    setError(null);
     createReview.mutate(undefined, {
       onError: (err) => {
         if (err instanceof ApiError && err.code === "REVIEW_ALREADY_EXISTS") {
           void refetch();
           return;
         }
-        setErrorCode(
-          err instanceof ApiError ? err.code : "AI_GENERATION_FAILED"
+        setError(
+          err instanceof ApiError
+            ? err
+            : new ApiError("AI_GENERATION_FAILED", "", 500)
         );
       },
     });
@@ -119,7 +121,7 @@ function ReviewScreen() {
 
   // No review yet — either still creating (202 in flight) or create errored
   if (!review) {
-    if (errorCode === "NO_MEDIA_FOR_SESSION") {
+    if (error?.code === "NO_MEDIA_FOR_SESSION") {
       return (
         <>
           {header}
@@ -141,14 +143,28 @@ function ReviewScreen() {
         </>
       );
     }
-    if (errorCode) {
+    if (error?.status === 429) {
+      return (
+        <>
+          {header}
+          <div className="pt-9">
+            <ErrorState
+              title="Limite de análises atingido"
+              subtitle="Você pode fazer até 5 análises por hora. Tente de novo em alguns minutos."
+              onRetry={generate}
+            />
+          </div>
+        </>
+      );
+    }
+    if (error) {
       return (
         <>
           {header}
           <div className="pt-9">
             <ErrorState
               title="Não conseguimos analisar agora."
-              subtitle="A IA falhou ao processar a mídia. Tenta de novo?"
+              subtitle="Tivemos uma falha ao processar a mídia. Tentar de novo?"
               onRetry={generate}
             />
           </div>

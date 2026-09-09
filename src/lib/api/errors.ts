@@ -33,6 +33,7 @@ export class ApiError extends Error {
 
   /** pt-BR user-facing message for this error code. */
   get userMessage(): string {
+    if (this.status === 429) return RATE_LIMIT_MESSAGE_PT_BR;
     return errorMessage(this.code);
   }
 
@@ -55,6 +56,10 @@ export class NetworkError extends Error {
     this.name = 'NetworkError';
   }
 }
+
+/** 429 — reused by ApiError#userMessage (status-based) and the RATE_LIMIT_EXCEEDED code entry. */
+export const RATE_LIMIT_MESSAGE_PT_BR =
+  'Você atingiu o limite de 5 análises por hora. Tente de novo em alguns minutos.';
 
 export const ERROR_MESSAGES_PT_BR: Record<string, string> = {
   MISSING_TOKEN: 'Sua sessão expirou. Entre novamente.',
@@ -85,6 +90,7 @@ export const ERROR_MESSAGES_PT_BR: Record<string, string> = {
   INTERNAL_ERROR: 'Algo deu errado do nosso lado. Tente de novo?',
   HTTP_ERROR: 'Algo deu errado. Tente de novo?',
   NETWORK_ERROR: 'Sem conexão. Verifique sua internet.',
+  RATE_LIMIT_EXCEEDED: RATE_LIMIT_MESSAGE_PT_BR,
 };
 
 const FALLBACK_MESSAGE = 'Algo deu errado. Tente de novo?';

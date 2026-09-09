@@ -24,6 +24,11 @@ describe('ApiError', () => {
     expect(err.userMessage).toMatch(/Tente de novo/);
   });
 
+  it('maps 429 to the rate-limit message regardless of code', () => {
+    const err = new ApiError('HTTP_ERROR', 'too many requests', 429);
+    expect(err.userMessage).toMatch(/5 análises por hora/);
+  });
+
   it('extracts field errors from VALIDATION_ERROR details', () => {
     const err = new ApiError('VALIDATION_ERROR', 'bad', 400, [
       { loc: ['body', 'location'], msg: 'campo obrigatório', type: 'missing' },
