@@ -4,6 +4,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { signupSchema, type SignupValues } from '@/schemas/auth';
 import { EMAIL_MAX, NAME_MAX, PASSWORD_MAX } from '@/config/constants';
+import { trackLead } from '@/lib/metaPixel';
 import { supabase } from '@/lib/supabase';
 import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
@@ -42,6 +43,9 @@ function SignupScreen() {
       }
       return;
     }
+    // Account was created — count the lead regardless of which branch below
+    // runs next (immediate session vs. pending email confirmation).
+    trackLead();
     // With email confirmation enabled in Supabase, signUp succeeds but returns
     // no session — navigating on would just bounce off the _app guard back to
     // /login with no explanation. Tell the user to check their inbox instead.

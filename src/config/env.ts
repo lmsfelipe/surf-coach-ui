@@ -42,6 +42,8 @@ export const env = {
   sentryDsn: import.meta.env.VITE_SENTRY_DSN,
   // Optional: Google Analytics stays a no-op when this is unset.
   gaMeasurementId: import.meta.env.VITE_GA_MEASUREMENT_ID,
+  // Optional: Meta (Facebook) Pixel stays a no-op when this is unset.
+  metaPixelId: import.meta.env.VITE_META_PIXEL_ID,
   // Session media photo count (mirrors the API rule; must match its config).
   minImagesPerSession: optionalInt(
     'VITE_MIN_IMAGES_PER_SESSION',

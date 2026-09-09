@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/react';
 import { AppCrashFallback } from '@/components/feedback/AppCrashFallback';
 import { AppLoading } from '@/components/feedback/AppLoading';
 import { initAnalytics, trackPageView } from '@/lib/analytics';
+import { initMetaPixel } from '@/lib/metaPixel';
 import { queryClient } from '@/lib/queryClient';
 import { initSentry } from '@/lib/sentry';
 import { router } from '@/router';
@@ -33,6 +34,7 @@ function bootstrap() {
 
   // Report the initial load, then every subsequent client-side navigation.
   initAnalytics();
+  initMetaPixel();
   router.subscribe('onResolved', () => {
     trackPageView(router.state.location.pathname);
   });
