@@ -5,8 +5,8 @@ import { RouterProvider } from '@tanstack/react-router';
 import * as Sentry from '@sentry/react';
 import { AppCrashFallback } from '@/components/feedback/AppCrashFallback';
 import { AppLoading } from '@/components/feedback/AppLoading';
-import { initAnalytics, trackPageView } from '@/lib/analytics';
-import { initMetaPixel } from '@/lib/metaPixel';
+import { initAnalytics, trackPageView as trackGaPageView } from '@/lib/analytics';
+import { initMetaPixel, trackPageView as trackMetaPageView } from '@/lib/metaPixel';
 import { queryClient } from '@/lib/queryClient';
 import { initSentry } from '@/lib/sentry';
 import { router } from '@/router';
@@ -36,7 +36,8 @@ function bootstrap() {
   initAnalytics();
   initMetaPixel();
   router.subscribe('onResolved', () => {
-    trackPageView(router.state.location.pathname);
+    trackGaPageView(router.state.location.pathname);
+    trackMetaPageView();
   });
 
   const rootEl = document.getElementById('root');

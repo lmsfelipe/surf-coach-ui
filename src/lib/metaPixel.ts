@@ -4,8 +4,10 @@ import { env } from '@/config/env';
  * Meta (Facebook) Pixel integration. No-op when VITE_META_PIXEL_ID is unset
  * (local dev, previews) and under test, so nothing is reported without a
  * configured pixel. Base code loads at bootstrap (main.tsx, same pixel id as
- * the LP); event calls live where the event happens (e.g. `Lead` in
- * signup.tsx) rather than here.
+ * the LP); `trackPageView` fires on every SPA route resolution (see main.tsx,
+ * same wiring as GA) since — unlike a static site — a client-side route
+ * change never re-runs the base code's own PageView. Other event calls live
+ * where the event happens (e.g. `Lead` in signup.tsx).
  */
 
 interface FbqFunction {
@@ -30,9 +32,10 @@ function enabled(): boolean {
 }
 
 /**
- * Inject fbevents.js and fire the initial PageView. Mirrors Meta's standard
- * base code: calls made before the script loads queue on `fbq.queue` and are
- * replayed once it's ready. Call once at app bootstrap.
+ * Inject fbevents.js. Mirrors Meta's standard base code: calls made before
+ * the script loads queue on `fbq.queue` and are replayed once it's ready.
+ * Call once at app bootstrap, before the router's first `onResolved` fires
+ * the initial PageView (see trackPageView / main.tsx).
  */
 export function initMetaPixel(): void {
   if (!enabled() || typeof document === 'undefined' || window.fbq !== undefined) return;
@@ -59,6 +62,11 @@ export function initMetaPixel(): void {
   document.head.appendChild(script);
 
   window.fbq('init', id);
+}
+
+/** Report a single-page-app navigation as a Pixel PageView. */
+export function trackPageView(): void {
+  if (!enabled()) return;
   window.fbq('track', 'PageView');
 }
 
