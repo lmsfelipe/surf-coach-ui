@@ -93,7 +93,7 @@ function SignupScreen() {
         </>
       }
     >
-      <AuthHeading>Criar conta</AuthHeading>
+      <AuthHeading sub="É grátis e leva menos de 1 minuto.">Criar conta</AuthHeading>
       {authError && (
         <div className="mb-4">
           <Alert>{authError}</Alert>
@@ -120,6 +120,7 @@ function SignupScreen() {
             name="password"
             label="Senha"
             autoComplete="new-password"
+            hint="Mínimo de 8 caracteres"
             icon={<IconLock size={17} />}
             maxLength={PASSWORD_MAX}
           />

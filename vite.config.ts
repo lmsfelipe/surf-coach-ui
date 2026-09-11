@@ -11,7 +11,11 @@ const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
 
 export default defineConfig({
   plugins: [
-    TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
+    TanStackRouterVite({
+      target: 'react',
+      autoCodeSplitting: true,
+      routeFileIgnorePattern: '\\.test\\.tsx$',
+    }),
     react(),
     tailwindcss(),
     ...(sentryAuthToken

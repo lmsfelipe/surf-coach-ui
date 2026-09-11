@@ -66,11 +66,14 @@ describe('surfboardFormSchema', () => {
 });
 
 describe('sessionFormSchema', () => {
+  const BOARD_ID = '11111111-1111-4111-8111-111111111111';
+
   it('accepts a valid session (meters)', () => {
     const r = sessionFormSchema.safeParse({
       sessionDate: '2026-06-01',
       location: 'Maresias',
       waveSize: 1.4,
+      surfboardId: BOARD_ID,
     });
     expect(r.success).toBe(true);
   });
@@ -80,6 +83,7 @@ describe('sessionFormSchema', () => {
       sessionDate: '01/06/2026',
       location: 'Maresias',
       waveSize: 1.4,
+      surfboardId: BOARD_ID,
     });
     expect(r.success).toBe(false);
   });
@@ -89,6 +93,16 @@ describe('sessionFormSchema', () => {
       sessionDate: '2026-06-01',
       location: 'Maresias',
       waveSize: 0,
+      surfboardId: BOARD_ID,
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it('rejects a missing surfboardId', () => {
+    const r = sessionFormSchema.safeParse({
+      sessionDate: '2026-06-01',
+      location: 'Maresias',
+      waveSize: 1.4,
     });
     expect(r.success).toBe(false);
   });

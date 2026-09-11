@@ -7,6 +7,7 @@ import { sessionFormSchema, type SessionFormValues } from '@/schemas/session';
 import { surfboardsQueryOptions, useSurfboards } from '@/hooks/queries/surfboards';
 import { useCreateSession } from '@/hooks/mutations/sessions';
 import { handleMutationError } from '@/lib/api/formErrors';
+import { cn } from '@/lib/utils';
 import { todayISODate } from '@/utils/dates';
 import type { Surfboard } from '@/types/api';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -82,7 +83,6 @@ function NewSessionScreen() {
               <TextField
                 name="location"
                 label="Qual foi o pico?"
-                placeholder="Ex.: Canal 1 — Santos/SP"
                 icon={<IconPin size={16} />}
                 maxLength={LOCATION_MAX}
               />
@@ -94,24 +94,35 @@ function NewSessionScreen() {
                 <SelectField
                   name="surfboardId"
                   label="Prancha usada"
-                  optional
                   options={boardOptions}
                   placeholder="Selecione"
                 />
               ) : (
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-secondary p-[12px_14px]">
-                  <span className="text-[12.5px] text-muted-foreground">
-                    Você ainda não cadastrou uma prancha
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    onClick={() => setBoardDialogOpen(true)}
+                <div>
+                  <div
+                    className={cn(
+                      'flex items-center justify-between gap-3 rounded-xl border border-transparent bg-secondary p-[12px_14px]',
+                      form.formState.errors.surfboardId && 'border-destructive',
+                    )}
                   >
-                    Cadastrar prancha
-                  </Button>
+                    <span className="text-[12.5px] text-muted-foreground">
+                      Você ainda não cadastrou uma prancha
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      onClick={() => setBoardDialogOpen(true)}
+                    >
+                      Cadastrar prancha
+                    </Button>
+                  </div>
+                  {form.formState.errors.surfboardId && (
+                    <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-danger">
+                      {form.formState.errors.surfboardId.message}
+                    </p>
+                  )}
                 </div>
               )}
               <TextareaField

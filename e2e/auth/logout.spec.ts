@@ -12,9 +12,9 @@ test('logging out clears the session and blocks re-entry to authenticated routes
   await page.getByRole('button', { name: 'Sair' }).click();
   await expect(page).toHaveURL(/\/login$/);
 
-  // Re-visiting an authenticated route afterward must redirect back to
-  // /login (with a ?redirect= back to it) — proves the session was actually
+  // Re-visiting an authenticated route afterward must redirect to the welcome
+  // screen (with a ?redirect= back to it) — proves the session was actually
   // cleared, not just navigated away.
   await page.goto('/sessions');
-  await expect(page).toHaveURL(/\/login\?/);
+  await expect(page).toHaveURL(/\/\?redirect=/);
 });

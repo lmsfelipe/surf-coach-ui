@@ -89,3 +89,14 @@ export function identifyUser(userId: string | null): void {
   if (!enabled()) return;
   window.gtag('set', { user_id: userId ?? undefined });
 }
+
+/**
+ * Report a custom GA4 event — for an interaction worth funnel analysis that
+ * page_view alone doesn't capture (e.g. which CTA a visitor took). `name`
+ * should be snake_case per GA4 convention; `params` become event parameters.
+ */
+export function trackEvent(name: string, params?: Record<string, unknown>): void {
+  if (!enabled()) return;
+  window.gtag('event', name, params);
+}
+

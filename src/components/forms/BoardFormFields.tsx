@@ -23,7 +23,6 @@ export function BoardFormFields() {
             step={0.1}
             min={BOARD_SIZE_FEET.min}
             max={BOARD_SIZE_FEET.max}
-            placeholder="5.10"
           />
         </div>
         <div className="flex-1">
@@ -42,7 +41,6 @@ export function BoardFormFields() {
         name="label"
         label="Apelido"
         optional
-        placeholder="Ex.: Pranchinha"
         maxLength={BOARD_LABEL_MAX}
       />
     </Card>

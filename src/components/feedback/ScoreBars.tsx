@@ -1,9 +1,9 @@
-import { SCORE_DIMENSIONS, SCORE_DIMENSION_LABELS } from '@/config/constants';
+import { SCORE_DIMENSIONS, SCORE_DIMENSION_LABELS, type ScoreDimension } from '@/config/constants';
 import type { Review } from '@/types/api';
 import { scoreColor } from '@/utils/score';
 
 interface ScoreBarsProps {
-  review: Review;
+  review: Pick<Review, ScoreDimension>;
 }
 
 /** Per-dimension score rows. Only renders dimensions with a non-null value. */

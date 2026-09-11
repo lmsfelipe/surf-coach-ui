@@ -57,4 +57,26 @@ describe('analytics', () => {
     const script = document.head.querySelector('script');
     expect(script?.src).toBe('https://www.googletagmanager.com/gtag/js?id=G-TEST0000');
   });
+
+  it('queues a custom event with its params', async () => {
+    const { initAnalytics, trackEvent } = await import('@/lib/analytics');
+
+    initAnalytics();
+    trackEvent('welcome_cta_click', { cta: 'signup' });
+
+    const [command, name, params] = Array.from(window.dataLayer.at(-1) as IArguments);
+    expect(command).toBe('event');
+    expect(name).toBe('welcome_cta_click');
+    expect(params).toEqual({ cta: 'signup' });
+  });
+
+  it('does nothing when GA is not configured', async () => {
+    vi.doMock('@/config/env', () => ({ env: { gaMeasurementId: undefined } }));
+    const { trackEvent } = await import('@/lib/analytics');
+
+    // No dataLayer was ever created (initAnalytics was never called either),
+    // so a no-op call must not throw trying to read/push onto it.
+    expect(() => trackEvent('welcome_cta_click', { cta: 'signup' })).not.toThrow();
+    expect(window.dataLayer).toBeUndefined();
+  });
 });

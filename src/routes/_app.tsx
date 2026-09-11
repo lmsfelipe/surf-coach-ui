@@ -10,7 +10,9 @@ export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context, location }) => {
     const { session } = useAuthStore.getState();
     if (!session) {
-      throw redirect({ to: '/login', search: { redirect: location.href } });
+      // Logged-out visitors get the signup-first welcome screen, which forwards
+      // `redirect` to /login for returning users.
+      throw redirect({ to: '/', search: { redirect: location.href } });
     }
     // GET /me auto-creates the profile; gate incomplete profiles to onboarding.
     let profile = await context.queryClient.ensureQueryData(profileQueryOptions());

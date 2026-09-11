@@ -13,7 +13,9 @@ export const sessionFormSchema = z.object({
     .number({ invalid_type_error: 'Informe o tamanho da onda' })
     .gt(0, 'O tamanho deve ser maior que 0')
     .max(WAVE_SIZE_METERS.max, `Máximo ${WAVE_SIZE_METERS.max} m`),
-  surfboardId: z.string().uuid().optional(),
+  surfboardId: z
+    .string({ required_error: 'Selecione uma prancha' })
+    .uuid({ message: 'Selecione uma prancha' }),
   notes: z.string().trim().max(NOTES_MAX, `Máximo ${NOTES_MAX} caracteres`).optional(),
 });
 export type SessionFormValues = z.infer<typeof sessionFormSchema>;

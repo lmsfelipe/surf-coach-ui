@@ -1,4 +1,5 @@
-import { useFormContext } from 'react-hook-form';
+import { useEffect, useRef, useState } from 'react';
+import { useFormContext, type ControllerRenderProps } from 'react-hook-form';
 import {
   FormControl,
   FormField,
@@ -17,6 +18,71 @@ interface NumberFieldProps {
   step?: number;
   optional?: boolean;
   placeholder?: string;
+}
+
+function formatValue(value: unknown) {
+  return typeof value === 'number' && !Number.isNaN(value) ? String(value) : '';
+}
+
+interface NumberInputProps
+  extends Omit<
+    React.ComponentPropsWithoutRef<typeof Input>,
+    'value' | 'onChange' | 'onFocus' | 'onBlur' | 'type' | 'name' | 'ref'
+  > {
+  field: ControllerRenderProps;
+}
+
+/**
+ * Keeps the input's raw text as local state, decoupled from `field.value`,
+ * so intermediate strings the user is still typing (e.g. "6.", "-") never
+ * get clobbered by a re-render. A native `type="number"` input can silently
+ * swallow a Backspace once the value is down to one digit, making the field
+ * feel stuck — `type="text"` avoids that browser quirk entirely.
+ *
+ * Forwards the rest of the props because `FormControl` uses a Radix `Slot`
+ * to inject `id`/`aria-*` onto this element — without them the field's
+ * `<FormLabel htmlFor>` association breaks.
+ */
+function NumberInput({ field, ...rest }: NumberInputProps) {
+  const [rawValue, setRawValue] = useState(() => formatValue(field.value));
+  const isFocused = useRef(false);
+
+  useEffect(() => {
+    if (!isFocused.current) {
+      setRawValue(formatValue(field.value));
+    }
+  }, [field.value]);
+
+  return (
+    <Input
+      type="text"
+      {...rest}
+      className="font-display tabular-nums tracking-[-0.02em]"
+      value={rawValue}
+      onFocus={() => {
+        isFocused.current = true;
+      }}
+      onChange={(e) => {
+        const next = e.target.value;
+        setRawValue(next);
+        if (next === '') {
+          field.onChange(undefined);
+          return;
+        }
+        const parsed = Number(next);
+        if (!Number.isNaN(parsed)) {
+          field.onChange(parsed);
+        }
+      }}
+      onBlur={() => {
+        isFocused.current = false;
+        setRawValue(formatValue(field.value));
+        field.onBlur();
+      }}
+      name={field.name}
+      ref={field.ref}
+    />
+  );
 }
 
 /**
@@ -44,21 +110,13 @@ export function NumberField({
           {label && <FormLabel optional={optional}>{label}</FormLabel>}
           <div className="relative">
             <FormControl>
-              <Input
-                type="number"
+              <NumberInput
+                field={field}
                 inputMode={inputMode}
                 min={min}
                 max={max}
                 step={step}
                 placeholder={placeholder}
-                className="font-display tabular-nums tracking-[-0.02em]"
-                value={field.value ?? ''}
-                onChange={(e) =>
-                  field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)
-                }
-                onBlur={field.onBlur}
-                name={field.name}
-                ref={field.ref}
               />
             </FormControl>
             {suffix && (

@@ -8,15 +8,15 @@ Stack notes: TanStack Router (file-based routes, generated `routeTree.gen.ts`), 
 
 ## 1. Routing structure
 
-`/` (`src/routes/index.tsx`) has no component — `beforeLoad` always redirects to `/sessions`.
+`/` (`src/routes/_auth/index.tsx`) is the public welcome screen for logged-out visitors: a sample analysis preview, a primary "Cadastre sua conta" CTA (→ `/signup`) and a secondary "Acesse sua conta" (→ `/login`, forwarding `?redirect=`). Signed-in users are sent to `/sessions` by the `_auth` guard.
 
 **`_auth` layout** (`src/routes/_auth.tsx`) — public screens, mounted at root paths (e.g. `/login`, not `/auth/login`). `beforeLoad`: if a session exists, redirect to `/sessions` — **except** `/reset-password`, which is exempted because Supabase's password-recovery link lands the user there already authenticated via the URL hash.
 
-**`_app` layout** (`src/routes/_app.tsx`) — authenticated screens. `beforeLoad`: no session → redirect to `/login?redirect=<original url>`. Otherwise ensures the profile is loaded (`GET /me`, auto-creates server-side), backfills `name` from signup metadata via `PATCH /me` once if missing, and redirects to `/onboarding` if the profile isn't complete (unless already there). Renders `AppShell`.
+**`_app` layout** (`src/routes/_app.tsx`) — authenticated screens. `beforeLoad`: no session → redirect to the welcome screen `/?redirect=<original url>` (its "Acesse sua conta" forwards `redirect` to `/login`). Otherwise ensures the profile is loaded (`GET /me`, auto-creates server-side), backfills `name` from signup metadata via `PATCH /me` once if missing, and redirects to `/onboarding` if the profile isn't complete (unless already there). Renders `AppShell`.
 
 | Path | File |
 |---|---|
-| `/` | `src/routes/index.tsx` (redirect only) |
+| `/` | `src/routes/_auth/index.tsx` (welcome) |
 | `/login` | `src/routes/_auth/login.tsx` |
 | `/signup` | `src/routes/_auth/signup.tsx` |
 | `/forgot-password` | `src/routes/_auth/forgot-password.tsx` |

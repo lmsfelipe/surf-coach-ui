@@ -1,5 +1,7 @@
-@import './styles/colors_and_type.css'; /* exported design tokens, unchanged */
+/* Webfonts: Inter Tight (display/numerics) + Plus Jakarta Sans (UI/body) + Archivo (heading) */
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Archivo:wght@500;600;700;800&family=Pacifico&display=swap');
 @import 'tailwindcss';
+@import './styles/colors_and_type.css'; /* exported design tokens, unchanged */
 
 /* ============================================================
    shadcn semantic tokens → SurfRise (dark "Midnight Electric")
@@ -99,17 +101,19 @@ html {
   --radius-lg: var(--radius-lg);
 }
 
-* {
-  border-color: var(--border);
-}
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  /* Hard guard: no single element can ever force a horizontal page scroll.
-     `clip` (not `hidden`) avoids creating a scroll container, so sticky bars
-     and the fixed nav keep working. Long text still truncates on its own. */
-  overflow-x: clip;
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    /* Hard guard: no single element can ever force a horizontal page scroll.
+       `clip` (not `hidden`) avoids creating a scroll container, so sticky bars
+       and the fixed nav keep working. Long text still truncates on its own. */
+    overflow-x: clip;
+  }
 }
 
 /* ============================================================

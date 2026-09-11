@@ -11,6 +11,7 @@ describe('sessionFormToPayload — meters end-to-end', () => {
     sessionDate: '2026-05-25',
     location: 'Canal 1',
     waveSize: 1,
+    surfboardId: 'b1',
   };
 
   it('passes wave size through unchanged', () => {
@@ -47,6 +48,7 @@ describe('useCreateSession', () => {
         sessionDate: '2026-06-01',
         location: 'Maresias',
         waveSize: 1.2,
+        surfboardId: 'b1',
       });
     });
 

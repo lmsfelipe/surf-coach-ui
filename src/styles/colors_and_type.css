@@ -4,9 +4,6 @@
    Light "Ocean Serenade" version preserved as colors_and_type-light.css
    ============================================================ */
 
-/* Webfonts: Inter Tight (display/numerics) + Plus Jakarta Sans (UI/body) + Archivo (heading) */
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Archivo:wght@500;600;700;800&family=Pacifico&display=swap');
-
 :root {
   /* -------- CORE PALETTE — 4 colors, no more -------- */
   --color-midnight:    #0B1020;  /* canvas bg */
@@ -122,105 +119,107 @@
 }
 
 /* ============================================================
-   Base
+   Base & semantic typography
+   Layered so Tailwind utilities (which sit in the `utilities`
+   layer) can still override these element defaults — otherwise
+   these unlayered rules would always win regardless of specificity.
    ============================================================ */
-html, body { background: var(--bg); color: var(--text); }
-body {
-  font-family: var(--font-body);
-  font-size: var(--fs-body-l);
-  line-height: var(--lh-body-l);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
+@layer base {
+  html, body { background: var(--bg); color: var(--text); }
+  body {
+    font-family: var(--font-body);
+    font-size: var(--fs-body-l);
+    line-height: var(--lh-body-l);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 
-/* ============================================================
-   Semantic typography
-   ============================================================ */
-.t-display, h1.display {
-  font-family: var(--font-display);
-  font-weight: 300;                    /* light + huge = the brand signature */
-  font-size: var(--fs-display);
-  line-height: var(--lh-display);
-  letter-spacing: var(--tr-display);
-  color: var(--text);
-  font-feature-settings: "tnum";
-}
-h1, .t-h1 {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: var(--fs-h1);
-  line-height: var(--lh-h1);
-  letter-spacing: var(--tr-h1);
-  color: var(--text);
-}
-h2, .t-h2 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: var(--fs-h2);
-  line-height: var(--lh-h2);
-  letter-spacing: var(--tr-h2);
-  color: var(--text);
-}
-h3, .t-h3 {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: var(--fs-h3);
-  line-height: var(--lh-h3);
-  color: var(--text);
-}
-/* Sessions greeting: reads as h3 on mobile, promotes to h1 on desktop (≥md). */
-.t-greeting {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: var(--fs-h3);
-  line-height: var(--lh-h3);
-  color: var(--text);
-}
-@media (min-width: 768px) {
-  .t-greeting {
+  .t-display, h1.display {
+    font-family: var(--font-display);
+    font-weight: 300;                    /* light + huge = the brand signature */
+    font-size: var(--fs-display);
+    line-height: var(--lh-display);
+    letter-spacing: var(--tr-display);
+    color: var(--text);
+    font-feature-settings: "tnum";
+  }
+  h1, .t-h1 {
     font-family: var(--font-heading);
     font-weight: 800;
     font-size: var(--fs-h1);
     line-height: var(--lh-h1);
     letter-spacing: var(--tr-h1);
+    color: var(--text);
   }
-}
-.t-eyebrow {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: var(--fs-eyebrow);
-  line-height: var(--lh-eyebrow);
-  letter-spacing: var(--tr-eyebrow);
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-p, .t-body-l {
-  font-family: var(--font-body);
-  font-size: var(--fs-body-l);
-  line-height: var(--lh-body-l);
-  color: var(--color-text-soft);
-}
-.t-body {
-  font-family: var(--font-body);
-  font-size: var(--fs-body);
-  line-height: var(--lh-body);
-  color: var(--color-text-soft);
-}
-.t-caption {
-  font-family: var(--font-body);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
-  color: var(--text-muted);
-}
-.t-mono, code {
-  font-family: var(--font-mono);
-  font-size: var(--fs-mono);
-  line-height: var(--lh-mono);
-  color: var(--text);
-}
-.t-numeric {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
+  h2, .t-h2 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--fs-h2);
+    line-height: var(--lh-h2);
+    letter-spacing: var(--tr-h2);
+    color: var(--text);
+  }
+  h3, .t-h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--fs-h3);
+    line-height: var(--lh-h3);
+    color: var(--text);
+  }
+  /* Sessions greeting: reads as h3 on mobile, promotes to h1 on desktop (≥md). */
+  .t-greeting {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--fs-h3);
+    line-height: var(--lh-h3);
+    color: var(--text);
+  }
+  @media (min-width: 768px) {
+    .t-greeting {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: var(--fs-h1);
+      line-height: var(--lh-h1);
+      letter-spacing: var(--tr-h1);
+    }
+  }
+  .t-eyebrow {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: var(--fs-eyebrow);
+    line-height: var(--lh-eyebrow);
+    letter-spacing: var(--tr-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  p, .t-body-l {
+    font-family: var(--font-body);
+    font-size: var(--fs-body-l);
+    line-height: var(--lh-body-l);
+    color: var(--color-text-soft);
+  }
+  .t-body {
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--color-text-soft);
+  }
+  .t-caption {
+    font-family: var(--font-body);
+    font-size: var(--fs-caption);
+    line-height: var(--lh-caption);
+    color: var(--text-muted);
+  }
+  .t-mono, code {
+    font-family: var(--font-mono);
+    font-size: var(--fs-mono);
+    line-height: var(--lh-mono);
+    color: var(--text);
+  }
+  .t-numeric {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
 }
