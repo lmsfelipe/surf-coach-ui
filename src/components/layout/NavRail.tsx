@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { IconPlus } from '@/components/icons';
+import { trackEvent } from '@/lib/analytics';
 import { NAV_ITEMS } from './nav-items';
 import { Wordmark } from './Wordmark';
 
@@ -26,7 +27,10 @@ export function NavRail() {
       </nav>
       <div className="mt-6">
         <Button asChild className="w-full">
-          <Link to="/sessions/new">
+          <Link
+            to="/sessions/new"
+            onClick={() => trackEvent('session_create_cta_click', { source: 'nav_rail' })}
+          >
             <IconPlus size={18} />
             Nova sessão
           </Link>

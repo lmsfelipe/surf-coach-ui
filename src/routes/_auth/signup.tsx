@@ -4,6 +4,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { signupSchema, type SignupValues } from '@/schemas/auth';
 import { EMAIL_MAX, NAME_MAX, PASSWORD_MAX } from '@/config/constants';
+import { trackEvent } from '@/lib/analytics';
 import { trackLead } from '@/lib/metaPixel';
 import { supabase } from '@/lib/supabase';
 import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
@@ -37,14 +38,17 @@ function SignupScreen() {
     });
     if (error) {
       if (error.message.toLowerCase().includes('registered')) {
+        trackEvent('signup_error', { reason: 'duplicate_email' });
         form.setError('email', { message: 'E-mail já cadastrado.' });
       } else {
+        trackEvent('signup_error', { reason: 'unknown' });
         setAuthError('Não conseguimos criar sua conta. Tente de novo?');
       }
       return;
     }
     // Account was created — count the lead regardless of which branch below
     // runs next (immediate session vs. pending email confirmation).
+    trackEvent('signup_success');
     trackLead();
     // With email confirmation enabled in Supabase, signUp succeeds but returns
     // no session — navigating on would just bounce off the _app guard back to

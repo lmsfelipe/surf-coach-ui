@@ -1,9 +1,33 @@
+import { useEffect, useRef } from 'react';
 import { queryOptions, useSuspenseQuery } from '@tanstack/react-query';
 import { reviewsApi } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/errors';
 import { usePollingWindow } from '@/hooks/usePollingWindow';
+import { trackEvent } from '@/lib/analytics';
 import { qk } from '@/lib/queryKeys';
 import type { Review } from '@/types/api';
+
+/**
+ * Fires a GA event the first time a review settles into 'completed'/'failed'
+ * (not on every poll that returns the same status). Keyed by review id so a
+ * retry — which re-arms status back to 'processing' under the same id — can
+ * report a later completion too.
+ */
+function useTrackReviewOutcome(review: Review | null | undefined) {
+  const firedFor = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!review || (review.status !== 'completed' && review.status !== 'failed')) return;
+    const key = `${review.id}:${review.status}`;
+    if (firedFor.current === key) return;
+    firedFor.current = key;
+    if (review.status === 'completed') {
+      trackEvent('review_completed', { overallScore: review.overallScore ?? undefined });
+    } else {
+      trackEvent('review_failed', { stage: 'processing' });
+    }
+  }, [review]);
+}
 
 /**
  * Review-by-session is 404-tolerant: a missing review resolves to `null` so the
@@ -41,6 +65,8 @@ export function useReviewBySession(sessionId: string) {
     ...reviewBySessionOptions(sessionId),
     refetchInterval: (q) => poll.interval(q.state.data),
   });
+
+  useTrackReviewOutcome(query.data);
 
   return { ...query, timedOut: poll.expired(query.data, query.isFetching) };
 }

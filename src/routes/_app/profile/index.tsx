@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { SURF_LEVEL_OPTIONS } from '@/config/constants';
 import { profileQueryOptions, useProfile } from '@/hooks/queries/profile';
+import { trackEvent } from '@/lib/analytics';
 import { useAuthStore } from '@/stores/authStore';
 import { initialsFor } from '@/components/layout/ProfileAvatar';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -71,6 +72,7 @@ function ProfileScreen() {
   const levelLabel = SURF_LEVEL_OPTIONS.find((o) => o.value === profile.surfLevel)?.label;
 
   async function handleLogout() {
+    trackEvent('logout_click');
     await signOut();
     await navigate({ to: '/login' });
   }

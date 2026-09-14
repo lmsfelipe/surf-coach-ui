@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { reviewsApi } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/errors';
+import { trackEvent } from '@/lib/analytics';
 import { qk } from '@/lib/queryKeys';
 import type { Review } from '@/types/api';
 
@@ -13,8 +14,16 @@ export function useCreateReview(sessionId: string) {
   return useMutation({
     mutationFn: () => reviewsApi.create({ sessionId }),
     onSuccess: (review: Review) => {
+      trackEvent('review_requested', { trigger: 'auto' });
       queryClient.setQueryData(qk.reviews.bySession(sessionId), review);
       queryClient.setQueryData(qk.reviews.detail(review.id), review);
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.code === 'REVIEW_ALREADY_EXISTS') return;
+      trackEvent('review_failed', {
+        stage: 'request',
+        code: error instanceof ApiError ? error.code : 'unknown',
+      });
     },
   });
 }
@@ -28,6 +37,7 @@ export function useRetryReview() {
   return useMutation({
     mutationFn: ({ reviewId }: { reviewId: string }) => reviewsApi.retry(reviewId),
     onSuccess: (review: Review) => {
+      trackEvent('review_requested', { trigger: 'manual_retry' });
       queryClient.setQueryData(qk.reviews.detail(review.id), review);
       queryClient.setQueryData(qk.reviews.bySession(review.sessionId), review);
     },
@@ -36,7 +46,12 @@ export function useRetryReview() {
         // Resync every review cache — the screens render from the by-session
         // key, not the detail key, so a prefix invalidation covers both.
         void queryClient.invalidateQueries({ queryKey: qk.reviews.all() });
+        return;
       }
+      trackEvent('review_failed', {
+        stage: 'request',
+        code: error instanceof ApiError ? error.code : 'unknown',
+      });
     },
   });
 }

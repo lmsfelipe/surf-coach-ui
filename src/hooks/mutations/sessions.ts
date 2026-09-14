@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { sessionsApi } from '@/lib/api/endpoints';
+import { trackEvent } from '@/lib/analytics';
 import { qk } from '@/lib/queryKeys';
 import type { SessionFormValues } from '@/schemas/session';
 import type { CreateSessionPayload, Session } from '@/types/api';
@@ -21,9 +22,11 @@ export function useCreateSession() {
     mutationFn: (values: SessionFormValues) =>
       sessionsApi.create(sessionFormToPayload(values)),
     onSuccess: (session: Session) => {
+      trackEvent('session_created');
       queryClient.setQueryData(qk.sessions.detail(session.id), session);
       void queryClient.invalidateQueries({ queryKey: qk.sessions.list() });
     },
+    onError: () => trackEvent('session_create_error'),
   });
 }
 

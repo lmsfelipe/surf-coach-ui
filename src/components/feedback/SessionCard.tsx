@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import type { Session } from '@/types/api';
+import { trackEvent } from '@/lib/analytics';
 import { formatShortDate } from '@/utils/dates';
 import { formatWaveSize } from '@/utils/units';
 import { scoreColor } from '@/utils/score';
@@ -20,6 +21,7 @@ export function SessionCard({ session, boardLabel, score }: SessionCardProps) {
     <Link
       to="/sessions/$sessionId"
       params={{ sessionId: session.id }}
+      onClick={() => trackEvent('session_card_click', { sessionId: session.id })}
       className="flex items-center gap-3.5 rounded-[18px] bg-card p-[14px_16px] text-left shadow-[var(--shadow-sm)] transition-colors hover:bg-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="min-w-0 flex-1">

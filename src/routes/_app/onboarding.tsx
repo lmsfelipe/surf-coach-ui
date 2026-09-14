@@ -6,6 +6,7 @@ import { onboardingSchema, type OnboardingValues } from '@/schemas/profile';
 import { profileQueryOptions } from '@/hooks/queries/profile';
 import { useUpdateProfile } from '@/hooks/mutations/profile';
 import { handleMutationError } from '@/lib/api/formErrors';
+import { trackEvent } from '@/lib/analytics';
 import { isProfileComplete } from '@/lib/profile';
 import { WordmarkImage } from '@/components/layout/Wordmark';
 import { Card } from '@/components/ui/card';
@@ -38,6 +39,7 @@ function OnboardingScreen() {
   async function onSubmit(values: OnboardingValues) {
     try {
       await updateProfile.mutateAsync(values);
+      trackEvent('onboarding_complete');
       await navigate({ to: '/sessions' });
     } catch (err) {
       handleMutationError(err, form.setError);

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { loginSchema, type LoginValues } from '@/schemas/auth';
 import { EMAIL_MAX, PASSWORD_MAX } from '@/config/constants';
+import { trackEvent } from '@/lib/analytics';
 import { supabase } from '@/lib/supabase';
 import { AuthHeading, AuthShell } from '@/components/layout/AuthShell';
 import { Form } from '@/components/ui/form';
@@ -35,9 +36,11 @@ function LoginScreen() {
     setAuthError(null);
     const { error } = await supabase.auth.signInWithPassword(values);
     if (error) {
+      trackEvent('login_error');
       setAuthError('E-mail ou senha inválidos.');
       return;
     }
+    trackEvent('login_success');
     const to = redirect && redirect.startsWith('/') ? redirect : '/sessions';
     await navigate({ to: to as '/sessions' });
   }

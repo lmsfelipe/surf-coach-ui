@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { IconBarbell, IconBoard, IconHome, IconPlus, IconUser } from '@/components/icons';
 import type { IconComponent } from '@/components/icons';
+import { trackEvent } from '@/lib/analytics';
 
 // --- cradle geometry (fixed radii; only the flat top segments flex with width)
 const H = 66, R = 26, CRADLE = 37, FILLET = 12;
@@ -140,7 +141,10 @@ export function FloatingNav() {
 
         {/* raised FAB nested in the cradle */}
         <button
-          onClick={() => navigate({ to: '/sessions/new' })}
+          onClick={() => {
+            trackEvent('session_create_cta_click', { source: 'fab' });
+            navigate({ to: '/sessions/new' });
+          }}
           aria-label="Nova sessão"
           style={{
             position: 'absolute', left: '50%', top: -35, transform: 'translateX(-50%)',

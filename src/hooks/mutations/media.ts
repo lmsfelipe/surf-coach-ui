@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { mediaApi } from '@/lib/api/endpoints';
 import { uploadMedia, type UploadOptions } from '@/lib/api/upload';
+import { ApiError } from '@/lib/api/errors';
+import { trackEvent } from '@/lib/analytics';
 import { qk } from '@/lib/queryKeys';
 
 interface UploadVars {
@@ -17,10 +19,23 @@ export function useUploadMedia(sessionId: string) {
     // A 207 partial success resolves with an empty `succeeded` only if every
     // file failed storage (that path is a 502 → onError), so refetch the gallery
     // whenever at least one file actually stored.
-    onSuccess: ({ succeeded }) => {
+    onSuccess: ({ succeeded, failed }) => {
+      if (failed.length) {
+        trackEvent('media_upload_partial_failure', {
+          succeeded: succeeded.length,
+          failed: failed.length,
+        });
+      } else {
+        trackEvent('media_upload_success');
+      }
       if (succeeded.length) {
         queryClient.invalidateQueries({ queryKey: qk.media.bySession(sessionId) });
       }
+    },
+    onError: (error) => {
+      trackEvent('media_upload_error', {
+        code: error instanceof ApiError ? error.code : 'unknown',
+      });
     },
   });
 }

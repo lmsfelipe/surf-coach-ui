@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { trainingPlansApi } from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/errors';
+import { trackEvent } from '@/lib/analytics';
 import { qk } from '@/lib/queryKeys';
 import type { TrainingPlan } from '@/types/api';
 
@@ -14,9 +15,16 @@ export function useCreateTrainingPlan(reviewId: string) {
   return useMutation({
     mutationFn: () => trainingPlansApi.create({ reviewId }),
     onSuccess: (plan: TrainingPlan) => {
+      trackEvent('plan_requested', { trigger: 'auto' });
       queryClient.setQueryData(qk.trainingPlans.byReview(reviewId), plan);
       queryClient.setQueryData(qk.trainingPlans.detail(plan.id), plan);
       void queryClient.invalidateQueries({ queryKey: qk.trainingPlans.list() });
+    },
+    onError: (error) => {
+      trackEvent('plan_failed', {
+        stage: 'request',
+        code: error instanceof ApiError ? error.code : 'unknown',
+      });
     },
   });
 }
@@ -30,6 +38,7 @@ export function useRetryTrainingPlan() {
   return useMutation({
     mutationFn: ({ planId }: { planId: string }) => trainingPlansApi.retry(planId),
     onSuccess: (plan: TrainingPlan) => {
+      trackEvent('plan_requested', { trigger: 'manual_retry' });
       queryClient.setQueryData(qk.trainingPlans.detail(plan.id), plan);
       queryClient.setQueryData(qk.trainingPlans.byReview(plan.reviewId), plan);
       // The list card renders status, so it has to see the "processing" flip too.
@@ -40,7 +49,12 @@ export function useRetryTrainingPlan() {
         // Resync every plan cache — the screens render from the by-review
         // key, not the detail key, so a prefix invalidation covers both.
         void queryClient.invalidateQueries({ queryKey: qk.trainingPlans.all() });
+        return;
       }
+      trackEvent('plan_failed', {
+        stage: 'request',
+        code: error instanceof ApiError ? error.code : 'unknown',
+      });
     },
   });
 }
