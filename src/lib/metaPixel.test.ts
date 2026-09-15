@@ -45,6 +45,6 @@ describe('metaPixel', () => {
     initMetaPixel();
     trackLead();
 
-    expect(window.fbq.queue.at(-1)).toEqual(['track', 'Lead']);
+    expect(window.fbq.queue.at(-1)).toEqual(['track', 'Lead', { value: 0, currency: 'BRL' }]);
   });
 });
