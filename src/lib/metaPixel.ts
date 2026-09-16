@@ -70,13 +70,8 @@ export function trackPageView(): void {
   window.fbq('track', 'PageView');
 }
 
-/**
- * Report a completed signup. Call right after the signup API call succeeds.
- * A signup has no monetary value, but Meta flags Lead events without
- * value/currency ("Send valid currency codes for more accurate ROAS"), so
- * send an explicit zero in BRL.
- */
+/** Report a completed signup. Call right after the signup API call succeeds. */
 export function trackLead(): void {
   if (!enabled()) return;
-  window.fbq('track', 'Lead', { value: 0, currency: 'BRL' });
+  window.fbq('track', 'Lead');
 }
