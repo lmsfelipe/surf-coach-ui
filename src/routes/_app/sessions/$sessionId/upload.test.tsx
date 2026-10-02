@@ -52,8 +52,41 @@ describe('/sessions/$sessionId/upload', () => {
     expect(screen.getByRole('button', { name: 'Corrija os arquivos' })).toBeDisabled();
   });
 
+  it('accepts a single photo — there is no minimum beyond one', async () => {
+    server.use(http.get(`${API}/api/v1/sessions/:sessionId/media/`, () => HttpResponse.json([])));
+    const user = userEvent.setup();
+    renderRoute('/sessions/s1/upload');
+    await screen.findByText('Toque pra escolher');
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(fileInput, [image('a.png')]);
+
+    expect(await screen.findByText('a.jpg')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Enviar' })).toBeEnabled(),
+    );
+  });
+
+  it('adds to the selection on a second trip to the picker instead of replacing it', async () => {
+    server.use(http.get(`${API}/api/v1/sessions/:sessionId/media/`, () => HttpResponse.json([])));
+    const user = userEvent.setup();
+    renderRoute('/sessions/s1/upload');
+    await screen.findByText('Toque pra escolher');
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(fileInput, [image('a.png')]);
+    expect(await screen.findByText('a.jpg')).toBeInTheDocument();
+
+    await user.upload(fileInput, [image('b.png'), image('c.png')]);
+
+    expect(await screen.findByText('c.jpg')).toBeInTheDocument();
+    expect(screen.getByText('a.jpg')).toBeInTheDocument();
+    expect(screen.getByText('b.jpg')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Enviar' })).toBeEnabled();
+  });
+
   it('uploads successfully and navigates to the session, where the new thumbnails appear', async () => {
-    // The pinned test env requires exactly 3 photos per session (min === max).
+    // Three photos is the pinned max — the upper end of the allowed range.
     let mediaState: Media[] = [];
     server.use(
       http.get(`${API}/api/v1/sessions/:sessionId/media/`, () => HttpResponse.json(mediaState)),
@@ -148,6 +181,44 @@ describe('/sessions/$sessionId/upload', () => {
     expect(screen.getByText('Não foi possível enviar c.jpg. Tente novamente.')).toBeInTheDocument();
     expect(screen.getByText(/Só as que falharam ficam aqui/)).toBeInTheDocument();
     expect(screen.getByAltText('a.jpg')).toBeInTheDocument();
+  });
+
+  it('keeps the remaining 207 failure markers when one failed file is removed', async () => {
+    let mediaState: Media[] = [];
+    server.use(
+      http.get(`${API}/api/v1/sessions/:sessionId/media/`, () => HttpResponse.json(mediaState)),
+      http.post(`${API}/api/v1/sessions/:sessionId/media/`, () => {
+        const succeeded = [makeMedia({ id: 'm-a', fileName: 'a.jpg' })];
+        mediaState = succeeded;
+        return HttpResponse.json(
+          {
+            succeeded,
+            failed: [
+              { fileName: 'b.jpg', code: 'STORAGE_UPLOAD_FAILED', message: 'failed', details: null },
+              { fileName: 'c.jpg', code: 'STORAGE_UPLOAD_FAILED', message: 'failed', details: null },
+            ],
+          },
+          { status: 207 },
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute('/sessions/s1/upload');
+    await screen.findByText('Toque pra escolher');
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(fileInput, [image('a.png'), image('b.png'), image('c.png')]);
+    const submit = await screen.findByRole('button', { name: 'Enviar' });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+    await screen.findByText('Não foi possível enviar b.jpg. Tente novamente.');
+
+    // Drop b.jpg — c.jpg is still pending retry and must keep saying why.
+    await user.click(screen.getAllByRole('button', { name: 'Remover arquivo' })[0]!);
+
+    await waitFor(() => expect(screen.queryByText('b.jpg')).not.toBeInTheDocument());
+    expect(screen.getByText('Não foi possível enviar c.jpg. Tente novamente.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument();
   });
 
   it('removes the thumb once a media item is deleted', async () => {

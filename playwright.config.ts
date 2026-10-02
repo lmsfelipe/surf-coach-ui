@@ -17,8 +17,9 @@ const E2E_ENV = {
   VITE_SUPABASE_URL: 'http://localhost:54321',
   VITE_SUPABASE_ANON_KEY: 'test-anon-key',
   VITE_SUPABASE_AVATAR_BUCKET: 'profile-media',
-  VITE_MIN_IMAGES_PER_SESSION: '3',
+  VITE_MIN_IMAGES_PER_SESSION: '1',
   VITE_MAX_IMAGES_PER_SESSION: '3',
+  VITE_MAX_VIDEOS_PER_SESSION: '1',
 };
 
 export default defineConfig({

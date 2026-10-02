@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { useQueryErrorResetBoundary } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { BOARD_TYPE_OPTIONS, MAX_IMAGES_PER_SESSION } from '@/config/constants';
+import { BOARD_TYPE_OPTIONS, MAX_IMAGES_PER_SESSION, VIDEO_LIMIT_PHRASE } from '@/config/constants';
 import { sessionQueryOptions, useSession } from '@/hooks/queries/sessions';
 import { mediaQueryOptions, useSessionMedia } from '@/hooks/queries/media';
 import { reviewBySessionOptions, useReviewBySession } from '@/hooks/queries/reviews';
@@ -385,7 +385,7 @@ function SessionDetailScreen() {
                 <IconImage size={26} />
                 <span className="text-[12.5px] font-semibold text-soft">Adicionar mídia</span>
                 <span className="text-[11px] text-muted-foreground">
-                  1 vídeo ou até {MAX_IMAGES_PER_SESSION} fotos
+                  {VIDEO_LIMIT_PHRASE} ou até {MAX_IMAGES_PER_SESSION} fotos
                 </span>
               </div>
             </button>

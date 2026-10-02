@@ -48,11 +48,17 @@ export const env = {
   minImagesPerSession: optionalInt(
     'VITE_MIN_IMAGES_PER_SESSION',
     import.meta.env.VITE_MIN_IMAGES_PER_SESSION,
-    3,
+    1,
   ),
   maxImagesPerSession: optionalInt(
     'VITE_MAX_IMAGES_PER_SESSION',
     import.meta.env.VITE_MAX_IMAGES_PER_SESSION,
     3,
+  ),
+  // Session video count (mirrors the API rule; must match its config).
+  maxVideosPerSession: optionalInt(
+    'VITE_MAX_VIDEOS_PER_SESSION',
+    import.meta.env.VITE_MAX_VIDEOS_PER_SESSION,
+    1,
   ),
 } as const;

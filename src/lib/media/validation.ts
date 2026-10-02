@@ -9,8 +9,10 @@ import {
   MAX_IMAGE_SIZE_BYTES,
   MAX_VIDEO_SIZE_BYTES,
   MAX_IMAGES_PER_SESSION,
+  MAX_VIDEOS_PER_SESSION,
   MIN_IMAGES_PER_SESSION,
   MAX_VIDEO_DURATION_SECONDS,
+  VIDEO_LIMIT_PHRASE,
 } from '@/config/constants';
 import type { MediaType } from '@/types/api';
 
@@ -35,14 +37,49 @@ export function classifyMedia(file: File): MediaType | null {
 
 /**
  * Resolve a single OS-dialog batch to one media kind (video wins): a batch
- * mixing a video with images keeps just the first video; otherwise everything
- * else is kept (images + any stray type, so invalid files still surface their
- * per-file error). Used to enforce the single-picker auto-replace behavior.
+ * mixing video with images keeps just the video(s), trimmed to the first
+ * MAX_VIDEOS_PER_SESSION; otherwise everything else is kept (images + any
+ * stray type, so invalid files still surface their per-file error). Applied
+ * to every pick before it reaches {@link mergeMediaSelection}.
  */
 export function resolveMediaBatch(picked: File[]): File[] {
-  const firstVideo = picked.find((f) => classifyMedia(f) === 'video');
-  if (firstVideo) return [firstVideo];
+  const videos = picked.filter((f) => classifyMedia(f) === 'video');
+  if (videos.length > 0) return videos.slice(0, MAX_VIDEOS_PER_SESSION);
   return picked;
+}
+
+/**
+ * Identity of a pending pick. Used both to dedupe a merge and as the React key
+ * of the selected-files list, so the two can never disagree: anything that
+ * would collide as a key is dropped as a duplicate instead of rendering twice.
+ * Name + size (not lastModified) because compression rebuilds the File, and a
+ * rebuild must still match the same photo picked again.
+ */
+export function mediaFileKey(file: File): string {
+  return `${file.name}:${file.size}`;
+}
+
+/**
+ * Merge a fresh OS-dialog batch into the current pending selection so picks
+ * accumulate across several trips to the picker instead of replacing what was
+ * already chosen. A video still wins, since a session is never a mix: picking
+ * one drops the pending images, and picking images drops a pending video.
+ * Files already selected (same name + size) are ignored, so re-picking one is a
+ * no-op and the list keeps unique keys.
+ */
+export function mergeMediaSelection(current: File[], picked: File[]): File[] {
+  const batch = resolveMediaBatch(picked);
+  if (batch.some((f) => classifyMedia(f) === 'video')) return batch;
+
+  const merged = current.filter((f) => classifyMedia(f) !== 'video');
+  const seen = new Set(merged.map(mediaFileKey));
+  for (const file of batch) {
+    const key = mediaFileKey(file);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(file);
+  }
+  return merged;
 }
 
 /** Context describing media already attached to the session. */
@@ -51,15 +88,24 @@ export interface ExistingMedia {
   type: MediaType | null;
   /** Count of images already attached (0 when the existing media is a video). */
   imageCount: number;
+  /** Count of videos already attached (0 when the existing media is images). */
+  videoCount: number;
 }
 
-const NO_EXISTING_MEDIA: ExistingMedia = { type: null, imageCount: 0 };
+const NO_EXISTING_MEDIA: ExistingMedia = { type: null, imageCount: 0, videoCount: 0 };
+
+/** pt-BR copy for a video pick that would exceed MAX_VIDEOS_PER_SESSION. */
+const VIDEO_CAP_MESSAGE =
+  MAX_VIDEOS_PER_SESSION === 1
+    ? 'Esta sessão já tem um vídeo — remova-o para trocar a mídia.'
+    : `Esta sessão já atingiu o máximo de ${MAX_VIDEOS_PER_SESSION} vídeos — remova algum para trocar a mídia.`;
 
 /**
- * Selection rule: exactly one video, OR up to MAX_IMAGES_PER_SESSION images —
- * never a mix. When the session already has media, the pending selection is
- * validated against it (combined set: attached + pending). Returns a form-level
- * error message, or null when the set is valid.
+ * Selection rule: up to MAX_VIDEOS_PER_SESSION videos, OR up to
+ * MAX_IMAGES_PER_SESSION images — never a mix. When the session already has
+ * media, the pending selection is validated against it (combined set:
+ * attached + pending). Returns a form-level error message, or null when the
+ * set is valid.
  */
 export function validateSelectionRule(
   files: File[],
@@ -68,10 +114,11 @@ export function validateSelectionRule(
   const videos = files.filter((f) => classifyMedia(f) === 'video');
   const images = files.filter((f) => classifyMedia(f) === 'image');
 
-  // A session with an existing video is complete/locked — no more media.
+  // A session with existing video(s) accepts only more video, up to the cap.
   if (existing.type === 'video') {
-    if (files.length > 0) {
-      return 'Esta sessão já tem um vídeo — remova-o para trocar a mídia.';
+    if (images.length > 0) return VIDEO_CAP_MESSAGE;
+    if (existing.videoCount + videos.length > MAX_VIDEOS_PER_SESSION) {
+      return VIDEO_CAP_MESSAGE;
     }
     return null;
   }
@@ -90,9 +137,13 @@ export function validateSelectionRule(
   if (files.length === 0) return null;
 
   if (videos.length > 0 && images.length > 0) {
-    return `Escolha 1 vídeo ou até ${MAX_IMAGES_PER_SESSION} fotos — não os dois.`;
+    return `Escolha ${VIDEO_LIMIT_PHRASE} ou até ${MAX_IMAGES_PER_SESSION} fotos — não os dois.`;
   }
-  if (videos.length > 1) return 'Envie apenas 1 vídeo por sessão.';
+  if (videos.length > MAX_VIDEOS_PER_SESSION) {
+    return MAX_VIDEOS_PER_SESSION === 1
+      ? 'Envie apenas 1 vídeo por sessão.'
+      : `Máximo de ${MAX_VIDEOS_PER_SESSION} vídeos por sessão.`;
+  }
   if (images.length > MAX_IMAGES_PER_SESSION) {
     return `Máximo de ${MAX_IMAGES_PER_SESSION} fotos por sessão.`;
   }

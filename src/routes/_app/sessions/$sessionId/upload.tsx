@@ -1,11 +1,18 @@
 import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { MAX_IMAGES_PER_SESSION, MEDIA_ACCEPT_ATTR } from "@/config/constants";
+import {
+  MAX_IMAGES_PER_SESSION,
+  MAX_VIDEOS_PER_SESSION,
+  MEDIA_ACCEPT_ATTR,
+  VIDEO_LIMIT_PHRASE,
+} from "@/config/constants";
 import { mediaQueryOptions, useSessionMedia } from "@/hooks/queries/media";
 import { useDeleteMedia, useUploadMedia } from "@/hooks/mutations/media";
 import {
   classifyMedia,
+  mediaFileKey,
+  mergeMediaSelection,
   resolveMediaBatch,
   validateMediaFiles,
   type ExistingMedia,
@@ -137,20 +144,41 @@ function UploadScreen() {
   const isUploading = uploadMedia.isPending;
 
   // Media already attached to the session constrains what can still be added:
-  // a video locks the session, existing photos cap the combined count at 3.
+  // existing video(s) cap the combined video count, existing photos cap the
+  // combined photo count — never both kinds on one session.
   const existingType = media[0]?.mediaType ?? null;
   const existingImageCount = media.filter(
     (m) => m.mediaType === "image"
   ).length;
+  const existingVideoCount = media.filter(
+    (m) => m.mediaType === "video"
+  ).length;
   const existing: ExistingMedia = {
     type: existingType,
     imageCount: existingImageCount,
+    videoCount: existingVideoCount,
   };
-  const locked = existingType === "video";
+  const locked =
+    existingType === "video" && existingVideoCount >= MAX_VIDEOS_PER_SESSION;
+
+  // Mirrors `files` so an async pick can merge into the selection as it stands
+  // when compression finishes, not the one captured when the picker opened.
+  const filesRef = React.useRef<File[]>(files);
+  function commitFiles(next: File[]) {
+    filesRef.current = next;
+    setFiles(next);
+  }
 
   async function applySelection(next: File[]) {
-    setFiles(next);
-    setFailedUploads(new Map());
+    commitFiles(next);
+    // Keep the 207 markers that still have a file in the list. Now that a pick
+    // adds to the selection instead of replacing it, clearing outright would
+    // strip the “this one failed” copy off files that are still pending retry.
+    setFailedUploads((prev) => {
+      if (prev.size === 0) return prev;
+      const names = new Set(next.map((f) => f.name));
+      return new Map([...prev].filter(([name]) => names.has(name)));
+    });
     uploadMedia.reset();
     const result = await validateMediaFiles(next, existing);
     setFileErrors(result.fileErrors);
@@ -174,7 +202,9 @@ function UploadScreen() {
         const prepared = await compressBatch(batch, (fraction) =>
           setProcessing((p) => (p ? { ...p, progress: fraction } : p))
         );
-        await applySelection(prepared);
+        // Add to what is already selected — a second trip to the picker tops
+        // the list up instead of replacing it.
+        await applySelection(mergeMediaSelection(filesRef.current, prepared));
       } finally {
         setProcessing(null);
       }
@@ -209,7 +239,7 @@ function UploadScreen() {
       // Staying also blocks "continue to review" until the set is restored,
       // honoring the min-photos floor (§4.5).
       const failedByName = new Map(failed.map((f) => [f.fileName, f]));
-      setFiles(batch.filter((f) => failedByName.has(f.name)));
+      commitFiles(batch.filter((f) => failedByName.has(f.name)));
       setFileErrors(new Map());
       setSelectionError(null);
       setFailedUploads(failedByName);
@@ -221,7 +251,7 @@ function UploadScreen() {
         toast.error(toUserMessage(err));
       }
       if (err instanceof ApiError && err.code === "EXPLICIT_CONTENT") {
-        setFiles([]);
+        commitFiles([]);
       }
     }
   }
@@ -257,7 +287,7 @@ function UploadScreen() {
             Toque pra escolher
           </div>
           <div className="text-[11.5px] leading-[17px] text-muted-foreground">
-            1 vídeo ou até {MAX_IMAGES_PER_SESSION} fotos
+            {VIDEO_LIMIT_PHRASE} ou até {MAX_IMAGES_PER_SESSION} fotos
             <br />
             fotos ≤10MB · vídeo ≤60MB e ≤120s
           </div>
@@ -289,7 +319,9 @@ function UploadScreen() {
         {locked && (
           <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <IconAlertCircle size={12} />
-            Esta sessão já tem um vídeo — remova-o para trocar a mídia.
+            {MAX_VIDEOS_PER_SESSION === 1
+              ? "Esta sessão já tem um vídeo — remova-o para trocar a mídia."
+              : `Esta sessão já atingiu o máximo de ${MAX_VIDEOS_PER_SESSION} vídeos — remova algum para trocar a mídia.`}
           </p>
         )}
 
@@ -318,7 +350,7 @@ function UploadScreen() {
             <div className="flex flex-col gap-2.5">
               {files.map((file) => (
                 <FileRow
-                  key={`${file.name}-${file.size}`}
+                  key={mediaFileKey(file)}
                   file={file}
                   error={fileErrors.get(file)}
                   storageError={

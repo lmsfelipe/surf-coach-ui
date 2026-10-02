@@ -20,10 +20,13 @@ export default defineConfig({
       VITE_SUPABASE_URL: 'http://localhost:54321',
       VITE_SUPABASE_ANON_KEY: 'test-anon-key',
       VITE_SUPABASE_AVATAR_BUCKET: 'profile-media',
-      // Pin the photo-count caps so tests don't inherit a developer's local
-      // .env (which may raise VITE_MAX_IMAGES_PER_SESSION). Tests assert "3 fotos".
-      VITE_MIN_IMAGES_PER_SESSION: '3',
+      // Pin the photo-count range so tests don't inherit a developer's local
+      // .env (which may raise VITE_MAX_IMAGES_PER_SESSION). Tests assert "3 fotos"
+      // for the cap; the floor of 1 means any non-empty photo pick is valid.
+      VITE_MIN_IMAGES_PER_SESSION: '1',
       VITE_MAX_IMAGES_PER_SESSION: '3',
+      // Same reasoning for the video cap — kept at the API's default of 1.
+      VITE_MAX_VIDEOS_PER_SESSION: '1',
     },
     coverage: {
       provider: 'v8',

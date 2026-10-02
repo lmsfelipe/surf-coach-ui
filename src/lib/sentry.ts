@@ -5,7 +5,7 @@ import { ApiError } from "@/lib/api/errors";
 /**
  * Initialize Sentry error monitoring. No-op when VITE_SENTRY_DSN is unset
  * (local dev, previews) so nothing is reported without a configured project.
- * Errors + session replay: no performance tracing.
+ * Errors + session replay + performance tracing.
  * Call once at app bootstrap (main.tsx) before anything else.
  */
 export function initSentry(): void {
@@ -23,10 +23,16 @@ export function initSentry(): void {
         maskAllInputs: false,
         blockAllMedia: false,
       }),
+      Sentry.browserTracingIntegration(),
     ],
     // Baseline visibility into normal sessions, plus every session that hits an error.
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1,
+    // Sample a fraction of transactions; 1.0 would price-out fast at prod volume.
+    tracesSampleRate: 0.2,
+    // Attach `sentry-trace`/`baggage` headers only to our own API, so traces
+    // link frontend spans to backend spans without leaking headers to third parties.
+    tracePropagationTargets: [env.apiBaseUrl],
     beforeSend(event, hint) {
       // Expected UX errors (auth/validation/not-found) are handled in the UI,
       // not bugs — drop them so the dashboard only shows actionable failures.

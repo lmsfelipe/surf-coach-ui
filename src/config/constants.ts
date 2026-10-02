@@ -38,7 +38,14 @@ export const IMAGE_COMPRESSION = {
 // Photo count per session — configurable via VITE_MIN/MAX_IMAGES_PER_SESSION
 // so ops can raise/lower the cap without a code change (must match the API).
 export const MIN_IMAGES_PER_SESSION = env.minImagesPerSession;
-export const MAX_IMAGES_PER_SESSION = env.maxImagesPerSession; // 1 video OR up to N images
+export const MAX_IMAGES_PER_SESSION = env.maxImagesPerSession; // OR up to N videos, never both
+// Video count per session — configurable via VITE_MAX_VIDEOS_PER_SESSION
+// so ops can raise/lower the cap without a code change (must match the API).
+export const MAX_VIDEOS_PER_SESSION = env.maxVideosPerSession;
+
+/** pt-BR phrase for the video half of the "N vídeo(s) OR M fotos" copy. */
+export const VIDEO_LIMIT_PHRASE =
+  MAX_VIDEOS_PER_SESSION === 1 ? '1 vídeo' : `até ${MAX_VIDEOS_PER_SESSION} vídeos`;
 
 // ---- Enums + pt-BR option lists ----------------------------------------
 export const SURF_LEVELS = [
