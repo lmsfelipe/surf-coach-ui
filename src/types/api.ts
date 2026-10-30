@@ -47,6 +47,18 @@ export interface Session {
   updatedAt: ISODateTime;
 }
 
+/** The slice of a review a sessions-list row needs (GET /sessions/ embeds it). */
+export interface SessionReviewSummary {
+  id: string;
+  status: ReviewStatus;
+  overallScore: number | null;
+}
+
+/** A row of GET /sessions/: the session plus its review, or null when none exists. */
+export interface SessionListItem extends Session {
+  review: SessionReviewSummary | null;
+}
+
 export interface Media {
   id: string;
   sessionId: string;

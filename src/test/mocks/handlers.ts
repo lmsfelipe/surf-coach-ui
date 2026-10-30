@@ -4,6 +4,7 @@ import {
   makeProfile,
   makeReview,
   makeSession,
+  makeSessionListItem,
   makeSurfboard,
   makeTrainingPlan,
 } from '../fixtures';
@@ -16,7 +17,7 @@ function envelope(code: string, message: string, details: unknown = null) {
 
 const profile = makeProfile();
 const surfboards = [makeSurfboard()];
-const sessions = [makeSession()];
+const sessions = [makeSessionListItem()];
 const media = [makeMedia()];
 const trainingPlans = [makeTrainingPlan()];
 

@@ -17,6 +17,9 @@ export function useCreateReview(sessionId: string) {
       trackEvent('review_requested', { trigger: 'auto' });
       queryClient.setQueryData(qk.reviews.bySession(sessionId), review);
       queryClient.setQueryData(qk.reviews.detail(review.id), review);
+      // The sessions list embeds each review's summary; refetch it so the row
+      // picks up the new review (and polls it) instead of showing "no review".
+      void queryClient.invalidateQueries({ queryKey: qk.sessions.list() });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.code === 'REVIEW_ALREADY_EXISTS') return;
@@ -40,6 +43,7 @@ export function useRetryReview() {
       trackEvent('review_requested', { trigger: 'manual_retry' });
       queryClient.setQueryData(qk.reviews.detail(review.id), review);
       queryClient.setQueryData(qk.reviews.bySession(review.sessionId), review);
+      void queryClient.invalidateQueries({ queryKey: qk.sessions.list() });
     },
     onError: (error) => {
       if (error instanceof ApiError && error.code === 'REVIEW_NOT_RETRYABLE') {

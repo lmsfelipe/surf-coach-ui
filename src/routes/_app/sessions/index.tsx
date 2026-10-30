@@ -1,9 +1,7 @@
-import { Suspense } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { BOARD_TYPE_OPTIONS } from '@/config/constants';
 import { sessionsQueryOptions, useSessions } from '@/hooks/queries/sessions';
 import { surfboardsQueryOptions, useSurfboards } from '@/hooks/queries/surfboards';
-import { useReviewBySession } from '@/hooks/queries/reviews';
 import type { Session, Surfboard } from '@/types/api';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/button';
@@ -57,40 +55,6 @@ function boardLabelFor(session: Session, boards: Surfboard[]): string | null {
   );
 }
 
-/** Resolves a card's score independently so a slow review can't block the list. */
-function SessionCardWithScore({
-  session,
-  boardLabel,
-}: {
-  session: Session;
-  boardLabel: string | null;
-}) {
-  return (
-    <Suspense
-      fallback={<SessionCard session={session} boardLabel={boardLabel} score="loading" />}
-    >
-      <ResolvedScoreCard session={session} boardLabel={boardLabel} />
-    </Suspense>
-  );
-}
-
-function ResolvedScoreCard({
-  session,
-  boardLabel,
-}: {
-  session: Session;
-  boardLabel: string | null;
-}) {
-  const { data: review } = useReviewBySession(session.id);
-  return (
-    <SessionCard
-      session={session}
-      boardLabel={boardLabel}
-      score={review?.overallScore ?? null}
-    />
-  );
-}
-
 function SessionsScreen() {
   const { data: sessions } = useSessions();
   const { data: boards } = useSurfboards();
@@ -129,10 +93,11 @@ function SessionsScreen() {
           </div>
           <div className="flex max-w-[100vw] flex-col gap-3 px-5 pt-3.5 lg:grid lg:grid-cols-2">
             {sessions.map((session) => (
-              <SessionCardWithScore
+              <SessionCard
                 key={session.id}
                 session={session}
                 boardLabel={boardLabelFor(session, boards)}
+                score={session.review?.overallScore ?? null}
               />
             ))}
           </div>

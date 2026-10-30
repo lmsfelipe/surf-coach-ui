@@ -5,6 +5,7 @@ import type {
   Profile,
   Review,
   Session,
+  SessionListItem,
   Surfboard,
   TrainingPlan,
   Workout,
@@ -47,6 +48,12 @@ export const makeSession = (o: Partial<Session> = {}): Session => ({
   notes: null,
   createdAt: '2026-05-20T14:00:00Z',
   updatedAt: '2026-05-20T14:00:00Z',
+  ...o,
+});
+
+export const makeSessionListItem = (o: Partial<SessionListItem> = {}): SessionListItem => ({
+  ...makeSession(),
+  review: { id: 'r1', status: 'completed', overallScore: 7.2 },
   ...o,
 });
 

@@ -36,6 +36,44 @@ describe('useCreateReview', () => {
   });
 });
 
+describe('review mutations refresh the sessions list', () => {
+  it('invalidates the list after creating a review, so its row shows the new review', async () => {
+    server.use(
+      http.post(`${API}/api/v1/reviews/`, () =>
+        HttpResponse.json(makeReview({ id: 'r1', sessionId: 's1', status: 'processing' }), {
+          status: 202,
+        }),
+      ),
+    );
+    const { Wrapper, queryClient } = queryWrapper(makeCacheInspectionQueryClient());
+    queryClient.setQueryData(qk.sessions.list(), []);
+
+    const { result } = renderHook(() => useCreateReview('s1'), { wrapper: Wrapper });
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+
+    expect(queryClient.getQueryState(qk.sessions.list())?.isInvalidated).toBe(true);
+  });
+
+  it('invalidates the list after a successful retry', async () => {
+    server.use(
+      http.post(`${API}/api/v1/reviews/:id/retry`, () =>
+        HttpResponse.json(makeReview({ id: 'r1', sessionId: 's1', status: 'processing' })),
+      ),
+    );
+    const { Wrapper, queryClient } = queryWrapper(makeCacheInspectionQueryClient());
+    queryClient.setQueryData(qk.sessions.list(), []);
+
+    const { result } = renderHook(() => useRetryReview(), { wrapper: Wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ reviewId: 'r1' });
+    });
+
+    expect(queryClient.getQueryState(qk.sessions.list())?.isInvalidated).toBe(true);
+  });
+});
+
 describe('useRetryReview', () => {
   it('seeds both caches with the re-enqueued review on success', async () => {
     server.use(
